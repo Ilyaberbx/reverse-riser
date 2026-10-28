@@ -100,7 +100,8 @@ double PluginProcessor::getTailLengthSeconds() const
 {
     if (freeze->load() > 0.5f)
         return std::numeric_limits<double>::infinity();
-    return params[Param::decay]->load() + params[Param::predelay]->load() * 0.001;
+    const auto echoTail = currentProgram.load() == lilUziVertPreset ? 3.0 : 0.0;
+    return params[Param::decay]->load() + params[Param::predelay]->load() * 0.001 + echoTail;
 }
 
 int PluginProcessor::getNumPrograms()
@@ -110,7 +111,7 @@ int PluginProcessor::getNumPrograms()
 
 int PluginProcessor::getCurrentProgram()
 {
-    return currentProgram;
+    return currentProgram.load();
 }
 
 // Applies every preset value; the reverb tail is left ringing and glides to the new settings
@@ -159,11 +160,26 @@ ReverbParams PluginProcessor::readParams() const
     return p;
 }
 
+double PluginProcessor::hostBpm() const
+{
+    if (auto* playHead = getPlayHead())
+        if (const auto position = playHead->getPosition())
+            if (const auto bpm = position->getBpm())
+                return *bpm;
+    return VocalChain::defaultBpm;
+}
+
 void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     engine.prepare (sampleRate, samplesPerBlock);
     engine.setParameters (readParams(), true);
     wetBuffer.setSize (2, samplesPerBlock);
+
+    vocalChain.prepare (sampleRate, samplesPerBlock);
+    voxBuffer.setSize (2, samplesPerBlock);
+    vocalChainAmount.reset (sampleRate, 0.05);
+    vocalChainAmount.setCurrentAndTargetValue (currentProgram.load() == lilUziVertPreset ? 1.0f : 0.0f);
+    vocalChainRunning = false;
 
     mix.reset (sampleRate, 0.05);
     mix.setCurrentAndTargetValue (params[Param::mix]->load() * 0.01f);
@@ -215,6 +231,15 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     mix.setTargetValue (params[Param::mix]->load() * 0.01f);
     outputGain.setTargetValue (juce::Decibels::decibelsToGain (params[Param::output]->load()));
 
+    // the vocal chain belongs to one preset; it fades in/out and starts clean each time it switches on
+    const auto vocalChainOn = currentProgram.load() == lilUziVertPreset;
+    vocalChainAmount.setTargetValue (vocalChainOn ? 1.0f : 0.0f);
+    if (vocalChainOn && ! vocalChainRunning)
+        vocalChain.reset();
+    vocalChainRunning = vocalChainOn || vocalChainAmount.isSmoothing();
+    if (vocalChainRunning)
+        vocalChain.setTempo (hostBpm());
+
     auto* left = buffer.getWritePointer (0);
     auto* right = numIn > 1 ? buffer.getWritePointer (1) : nullptr;
 
@@ -224,7 +249,27 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         const auto n = juce::jmin (wetBuffer.getNumSamples(), buffer.getNumSamples() - start);
         auto* wetL = wetBuffer.getWritePointer (0);
         auto* wetR = wetBuffer.getWritePointer (1);
-        engine.process (left + start, right != nullptr ? right + start : left + start, wetL, wetR, n);
+        const float* dryL = left + start;
+        const float* dryR = right != nullptr ? right + start : dryL;
+
+        if (vocalChainRunning)
+        {
+            auto* voxL = voxBuffer.getWritePointer (0);
+            auto* voxR = voxBuffer.getWritePointer (1);
+            std::copy_n (dryL, n, voxL);
+            std::copy_n (dryR, n, voxR);
+            vocalChain.process (voxL, voxR, n);
+            for (int i = 0; i < n; ++i)
+            {
+                const auto amount = vocalChainAmount.getNextValue();
+                voxL[i] = dryL[i] + amount * (voxL[i] - dryL[i]);
+                voxR[i] = dryR[i] + amount * (voxR[i] - dryR[i]);
+            }
+            dryL = voxL;
+            dryR = voxR;
+        }
+
+        engine.process (dryL, dryR, wetL, wetR, n);
 
         for (int i = 0; i < n; ++i)
         {
@@ -234,15 +279,36 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             const auto gain = outputGain.getNextValue();
             if (right != nullptr)
             {
-                left[start + i] = (dryGain * left[start + i] + wetGain * wetL[i]) * gain;
-                right[start + i] = (dryGain * right[start + i] + wetGain * wetR[i]) * gain;
+                left[start + i] = (dryGain * dryL[i] + wetGain * wetL[i]) * gain;
+                right[start + i] = (dryGain * dryR[i] + wetGain * wetR[i]) * gain;
             }
             else
             {
-                left[start + i] = (dryGain * left[start + i] + wetGain * 0.5f * (wetL[i] + wetR[i])) * gain;
+                left[start + i] = (dryGain * 0.5f * (dryL[i] + dryR[i]) + wetGain * 0.5f * (wetL[i] + wetR[i])) * gain;
             }
         }
     }
+
+    pushVisualizerSamples (left, right != nullptr ? right : left, buffer.getNumSamples());
+}
+
+void PluginProcessor::pushVisualizerSamples (const float* left, const float* right, int numSamples)
+{
+    const auto scope = visualizerFifo.write (numSamples);
+    const auto copy = [&] (int destStart, int count, int srcStart) {
+        for (int i = 0; i < count; ++i)
+            visualizerSamples[(size_t) (destStart + i)] = 0.5f * (left[srcStart + i] + right[srcStart + i]);
+    };
+    copy (scope.startIndex1, scope.blockSize1, 0);
+    copy (scope.startIndex2, scope.blockSize2, scope.blockSize1);
+}
+
+int PluginProcessor::readVisualizerSamples (float* dest, int maxSamples)
+{
+    const auto scope = visualizerFifo.read (juce::jmin (maxSamples, visualizerFifo.getNumReady()));
+    std::copy_n (visualizerSamples.begin() + scope.startIndex1, scope.blockSize1, dest);
+    std::copy_n (visualizerSamples.begin() + scope.startIndex2, scope.blockSize2, dest + scope.blockSize1);
+    return scope.blockSize1 + scope.blockSize2;
 }
 
 //==============================================================================
@@ -260,7 +326,7 @@ juce::AudioProcessorEditor* PluginProcessor::createEditor()
 void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = apvts.copyState();
-    state.setProperty ("program", currentProgram, nullptr);
+    state.setProperty ("program", currentProgram.load(), nullptr);
     if (const auto xml = state.createXml())
         copyXmlToBinary (*xml, destData);
 }

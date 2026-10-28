@@ -145,7 +145,7 @@ TEST_CASE ("decay time matches the Decay parameter", "[reverb][behavior]")
 TEST_CASE ("Mix at 0 leaves the dry signal bit-exact", "[reverb][behavior]")
 {
     PluginProcessor p;
-    p.setCurrentProgram (5); // Shimmer Heaven: the busiest preset
+    p.setCurrentProgram (6); // Shimmer Heaven: the busiest preset
     setParam (p, "mix", 0);
     setParam (p, "output", 0);
     prepare (p, 44100.0);
@@ -192,7 +192,7 @@ TEST_CASE ("Freeze sustains the tail and ignores new input", "[reverb][behavior]
     // A gets silence while frozen, B gets loud noise
     auto run = [&] (bool feedWhileFrozen) {
         PluginProcessor p;
-        p.setCurrentProgram (2); // Chamber
+        p.setCurrentProgram (3); // Chamber
         setParam (p, "mix", 100);
         prepare (p, sampleRate);
 
@@ -251,7 +251,7 @@ TEST_CASE ("programs apply every preset value", "[reverb][presets]")
 TEST_CASE ("state round-trips parameters and the program", "[reverb][state]")
 {
     PluginProcessor source;
-    source.setCurrentProgram (6);
+    source.setCurrentProgram (7);
     setParam (source, "size", 73);
     setParam (source, "freeze", 1);
 
@@ -261,11 +261,62 @@ TEST_CASE ("state round-trips parameters and the program", "[reverb][state]")
     PluginProcessor restored;
     restored.setStateInformation (state.getData(), (int) state.getSize());
 
-    CHECK (restored.getCurrentProgram() == 6);
+    CHECK (restored.getCurrentProgram() == 7);
     CHECK (getParam (restored, "freeze") == 1.0f);
     for (auto* id : presetParamIds)
     {
         CAPTURE (id);
         CHECK (juce::exactlyEqual (getParam (restored, id), getParam (source, id)));
+    }
+}
+
+TEST_CASE ("Lil Uzi Vert vocal chain", "[reverb][presets]")
+{
+    constexpr double sampleRate = 44100.0;
+    auto makeProcessor = [&] {
+        auto p = std::make_unique<PluginProcessor>();
+        p->setCurrentProgram (lilUziVertPreset);
+        setParam (*p, "mix", 0); // dry path only: the vocal chain without the reverb
+        setParam (*p, "output", 0);
+        prepare (*p, sampleRate); // no playhead -> default tempo
+        return p;
+    };
+
+    SECTION ("quarter-note ping-pong echoes, left then right, each quieter")
+    {
+        auto p = makeProcessor();
+        juce::AudioBuffer<float> buffer (2, (int) sampleRate);
+        buffer.clear();
+        buffer.setSample (0, 0, 0.5f);
+        buffer.setSample (1, 0, 0.5f);
+        render (*p, buffer);
+
+        const auto quarter = (int) (60.0 / VocalChain::defaultBpm * sampleRate);
+        const auto window = (int) (0.03 * sampleRate);
+        const auto peak = [&] (int channel, int centre) { return buffer.getMagnitude (channel, centre - window, 2 * window); };
+        const auto quiet = buffer.getMagnitude (0, quarter / 2, window);
+
+        CAPTURE (quiet, peak (0, quarter), peak (1, quarter), peak (1, 2 * quarter));
+        CHECK (peak (0, quarter) > 10.0f * quiet);
+        CHECK (peak (0, quarter) > 4.0f * peak (1, quarter));
+        CHECK (peak (1, 2 * quarter) > 10.0f * quiet);
+        CHECK (peak (1, 2 * quarter) < peak (0, quarter));
+    }
+
+    SECTION ("compression narrows a 20 dB level difference")
+    {
+        const auto outputLevel = [&] (float amplitude) {
+            auto p = makeProcessor();
+            juce::AudioBuffer<float> buffer (2, (int) sampleRate);
+            for (int c = 0; c < 2; ++c)
+                for (int i = 0; i < buffer.getNumSamples(); ++i)
+                    buffer.setSample (c, i, amplitude * std::sin (juce::MathConstants<float>::twoPi * 1000.0f * (float) i / (float) sampleRate));
+            render (*p, buffer);
+            return juce::Decibels::gainToDecibels (rms (buffer, buffer.getNumSamples() / 2, buffer.getNumSamples() / 2));
+        };
+
+        const auto difference = outputLevel (1.0f) - outputLevel (0.1f);
+        CAPTURE (difference);
+        CHECK (difference < 12.0f);
     }
 }

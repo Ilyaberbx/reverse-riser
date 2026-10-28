@@ -66,6 +66,9 @@ add_subdirectory(modules/clap-juce-extensions EXCLUDE_FROM_ALL)
 # This adds the melatonin inspector module
 add_subdirectory (modules/melatonin_inspector)
 
+# Fast drop/inner shadows and blurs for the neumorphic glass UI
+add_subdirectory (modules/melatonin_blur)
+
 # See `docs/CMake API.md` in the JUCE repo for all config options
 juce_add_plugin("${PROJECT_NAME}"
     # Icons for the standalone app
@@ -150,6 +153,7 @@ target_link_libraries(SharedCode
     INTERFACE
     Assets
     melatonin_inspector
+    melatonin_blur
     juce_audio_utils
     juce_audio_processors
     juce_dsp

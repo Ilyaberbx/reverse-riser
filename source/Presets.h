@@ -19,9 +19,13 @@ struct Preset
     std::array<float, 13> values;
 };
 
+// gets the built-in VocalChain (delay, doubler, EQ, de-esser, compression) on top of its knob values
+inline constexpr int lilUziVertPreset = 0;
+
 // clang-format off
-inline constexpr std::array<Preset, 8> factoryPresets { {
+inline constexpr std::array<Preset, 9> factoryPresets { {
     //                      size  decay  pre  mix  damp diff rate  depth width shim spring lofi out
+    { "Lil Uzi Vert",    { 90,   4.5f,  70,  35,  15,  90, 0.35f, 40,  100,  30,   0,     0, -2 } }, // Luv Is Rage 2: bright, wide wash behind dry, upfront vocals
     { "Small Room",      { 25,   0.5f,   5,  25,  45,  70, 0.6f,  15,   80,   0,   0,     0,  0 } },
     { "Medium Room",     { 45,   1.0f,  12,  28,  40,  75, 0.5f,  20,   90,   0,   0,     0,  0 } },
     { "Chamber",         { 55,   1.6f,  18,  30,  30,  85, 0.4f,  25,  100,   0,   0,     0,  0 } },

@@ -3,6 +3,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "Presets.h"
 #include "ReverbEngine.h"
+#include "VocalChain.h"
 
 #if (MSVC)
 #include "ipps.h"
@@ -42,8 +43,12 @@ public:
 
     juce::AudioProcessorValueTreeState apvts;
 
+    // message thread: takes up to maxSamples of the latest mono output for the visualizer (lock-free, single reader)
+    int readVisualizerSamples (float* dest, int maxSamples);
+
 private:
     ReverbParams readParams() const;
+    double hostBpm() const;
 
     // cached in presetParamIds order, so the audio thread never looks parameters up by name
     std::array<std::atomic<float>*, presetParamIds.size()> params {};
@@ -52,7 +57,18 @@ private:
     ReverbEngine engine;
     juce::AudioBuffer<float> wetBuffer;
     juce::SmoothedValue<float> mix, outputGain;
-    int currentProgram = 0;
+    std::atomic<int> currentProgram { 0 }; // read on the audio thread to switch the vocal chain
+
+    VocalChain vocalChain;
+    juce::AudioBuffer<float> voxBuffer;
+    juce::SmoothedValue<float> vocalChainAmount;
+    bool vocalChainRunning = false;
+
+    // audio -> UI: mono output samples; drops samples instead of blocking when the UI isn't reading
+    void pushVisualizerSamples (const float* left, const float* right, int numSamples);
+    static constexpr int visualizerCapacity = 8192;
+    juce::AbstractFifo visualizerFifo { visualizerCapacity };
+    std::array<float, visualizerCapacity> visualizerSamples {};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

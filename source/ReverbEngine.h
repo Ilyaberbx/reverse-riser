@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DelayLine.h"
 #include <juce_dsp/juce_dsp.h>
 
 // Normalised (0..1) controls unless a unit is given
@@ -32,28 +33,6 @@ public:
     void process (const float* inL, const float* inR, float* outL, float* outR, int numSamples);
 
 private:
-    class Delay
-    {
-    public:
-        void prepare (int maxDelay);
-        void clear() { std::fill (buffer.begin(), buffer.end(), 0.0f); }
-        void push (float x)
-        {
-            buffer[(size_t) writePos] = x;
-            writePos = (writePos + 1) & mask;
-        }
-        // sample pushed `delay` pushes ago, delay >= 1
-        float read (int delay) const { return buffer[(size_t) ((writePos - delay) & mask)]; }
-        float readLinear (float delay) const;
-        // cubic Hermite, delay >= 2
-        float readHermite (float delay) const;
-
-    private:
-        std::vector<float> buffer;
-        int mask = 0;
-        int writePos = 0;
-    };
-
     static constexpr int numLines = 8;
     static constexpr int numDiffusers = 4;
     static constexpr int numSpringAllpasses = 16;
@@ -63,27 +42,27 @@ private:
 
     double sr = 44100.0;
 
-    Delay preDelay[2];
+    DelayLine preDelay[2];
 
-    Delay springDelay;
+    DelayLine springDelay;
     int springLength = 0;
     float springX1[numSpringAllpasses] {}, springY1[numSpringAllpasses] {};
     float springLp = 0.0f, springFeedback = 0.0f;
 
-    Delay diffusers[2][numDiffusers];
+    DelayLine diffusers[2][numDiffusers];
     int diffuserLength[2][numDiffusers] {};
 
-    Delay lines[numLines];
+    DelayLine lines[numLines];
     float baseLength[numLines] {};
     float dampState[numLines] {};
     float lfoPhase[numLines] {};
 
-    Delay shimmerDelay;
+    DelayLine shimmerDelay;
     float shimmerWindow = 0.0f, shimmerPhase = 0.0f;
 
     juce::dsp::StateVariableTPTFilter<float> highCut, lowCut;
 
-    Delay wowDelay[2];
+    DelayLine wowDelay[2];
     float wowPhase = 0.0f, hold[2] {}, holdCounter = 0.0f;
 
     juce::SmoothedValue<float> sizeScale, preDelaySamples, freezeAmount;
