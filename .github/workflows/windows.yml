@@ -32,7 +32,7 @@ jobs:
         run: cmake --build Builds --config Release
 
       - name: Upload plugins
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Reverse-Riser-Windows
           path: |
