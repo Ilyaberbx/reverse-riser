@@ -1,21 +1,21 @@
-# Design system: soft neumorphism, one hero, light from the music
+# Design system: soft neumorphism, one hero, the riser on screen
 
-A calm instrument panel. Extruded, softly lit surfaces carry the controls. One big knob, **Mix**, is the obvious place to start. A recessed screen shows the Phýllon visualizer, and the music is the only thing that adds colour. The same world comes in a light and a dark palette, and the user picks one in the ☰ menu.
+A calm instrument panel for making reverse-reverb risers. Extruded, softly lit surfaces carry the controls. One big knob, **REVERSE** (the riser's length), is the obvious place to start. A recessed screen shows the riser itself. The same world comes in a light and a dark palette, and the user picks one in the ☰ menu.
 
-Code: tokens and components live in `source/Theme.h/.cpp`, the layout in `source/PluginEditor.cpp`, and the visualizer in `source/PhyllonAnalyser.*` and `source/PhyllonView.*`.
+Code: tokens and components live in `source/Theme.h/.cpp`, the layout and the riser display in `source/PluginEditor.cpp`.
 
 ## Layout
 
 The base size is **520×720**, portrait. From top to bottom:
 
-1. **Preset bar:** ‹ [preset name ▾] › centred, with ☰ on the right (Light theme / Dark theme / Reset window size).
-2. **Screen:** a recessed panel holding the visualizer.
-   - The wordmark RE**VERB** sits top-left.
-   - The **Freeze** power toggle sits bottom-left.
-   - Light from the trail heads spills softly around the screen's edge.
-3. **Hero, Mix:** the largest control at every size. It has a tick-dot ring, a recessed well, a raised disc and a pointer line, with the caption **MIX** 35 % below.
-4. **Tabs:** Space · Tone · Character, as a pressed track with a raised pill on the selected tab. Under them sit four small knobs (three on Character, centred).
-5. **Output:** a small knob with its caption, at the bottom.
+1. **Preset bar:** ‹ [preset name ▾] › and a save button, centred, with ☰ on the right (Light theme / Dark theme / Show user presets / Reset window size).
+2. **Screen:** a recessed panel.
+   - The wordmark REVERSE **RISER** sits top-left, RESET top-right, and next to it a small strip of the captured audio with red markers around the syllable.
+   - The riser: accent bars on a dB scale, fading in from the left, with the pitch curve on top when PITCH is on and FX is selected.
+   - LISTEN and LOOP bottom-left, the RAW | FX switch bottom-right.
+   - Hovering shows a dashed "Drag & Drop into DAW" zone; dragging exports the WAV.
+3. **Hero, REVERSE:** the largest control at every size, with five detents (1/4 to 4 bars) and the caption **REVERSE** 1 BAR below.
+4. **FX row:** REVERB · CHORUS · TREMOLO · PITCH power toggles. The icon switches an effect; the name opens its settings in a call-out (the reverb dropdown, or two or three sliders).
 
 Dot grips mark the four corners, and the bottom-right one is the resize handle.
 
@@ -23,12 +23,9 @@ Dot grips mark the four corners, and the bottom-right one is the resize handle.
 
 - **Resizing:** from 380×520 to 1800×1800, at any aspect ratio. The size is saved with the DAW session.
 - **One unit:** `u = clamp(min(w/520, h/720), 0.75, 2.2)` scales every font, gap, radius, shadow and knob.
-- **Portrait / square (w ≤ 1.15·h):** the stack above. The hero takes up to 68% of the flexible height and up to 80% of the width; the screen gets the rest (64u to 340u), so tall windows never leave dead space.
-- **Wide (w > 1.15·h):** the left column holds the preset bar, screen, tabs and knobs. The right column is the hero, as large as it fits, with Output under it.
-- **Knob grid:** 4 across when each cell gets at least 84u, otherwise 2×2.
-- **Minimum sizes:** small knobs are never under 56 px, and the Output knob and other targets never under 44 px.
+- **One column:** wide windows centre it (at most 0.9 × height wide) instead of stretching it. The hero takes up to 60% of the flexible height; the screen gets the rest (150u to 320u).
 - **Pixel snapping:** edges snap to whole pixels, so neighbours never overlap.
-- **Test:** `tests/EditorLayoutTests.cpp` enforces all of this at seven odd sizes.
+- **Test:** `tests/EditorLayoutTests.cpp` enforces this at seven odd sizes.
 
 ## Tokens
 
@@ -45,7 +42,7 @@ Dot grips mark the four corners, and the bottom-right one is the resize handle.
 | `textMuted` | `#626B80` (5:1) | `#9198A8` (6:1) | Labels, inactive tabs, units |
 | `textFaint` | `#C3CAD6` | `#3B3F49` | Unlit tick dots only, never text |
 
-**Glow** (Phýllon bands, low → high): `#5EE7DF` · `#7FB8FF` · `#8C7CFF` · `#C77DFF` · `#FF7EB3` · `#FF9A8B` · `#FFC371` · `#FFE29A`. **Accent** for "on" states: `#8C7CFF`.
+**Glow** (hero tick dots, low → high): `#5EE7DF` · `#7FB8FF` · `#8C7CFF` · `#C77DFF` · `#FF7EB3` · `#FF9A8B` · `#FFC371` · `#FFE29A`. **Accent** for "on" states: `#8C7CFF`.
 
 ### Depth (all distances × u)
 | Element | Recipe |
@@ -62,35 +59,26 @@ Raised = `shadowDark` at (+d, +d) and `shadowLight` at (−d, −d). Pressed = t
 ### Type: Manrope (OFL, bundled in `assets/fonts/`)
 | Role | Weight | Size (×u) | Tracking | Notes |
 |---|---|---|---|---|
-| Wordmark | 300 + 800 | 15 | 0.22 | "RE" muted, "VERB" primary |
+| Wordmark | 300 + 800 | 15 | 0.22 | "REVERSE" muted, "RISER" primary |
 | Hero name / value | 800 / 400 | 15 | 0.16 / 0.06 | Value uses tabular figures |
 | Knob label | 700 | 10.5 | 0.12 | UPPERCASE, muted |
 | Knob value | 600 | 12.5 | 0.02 | Tabular figures, primary |
 | Tab / toggle | 700 | 11.5 | 0.10 | UPPERCASE |
 | Preset / menu | 600 / 500 | 13 | 0 | |
 
-## Visualizer (Phýllon, refined)
-
-Restraint over spectacle: structure first, motion second.
-
-- **Seed field:** all 420 phyllotaxis seeds (golden angle 137.5°, radius ∝ √n) as small dots. Inner rings are bass and outer rings treble, each ring coloured by its band's glow hue and swelling with that band.
-- **Comets:** 8 fine trails, one per band, glide along the spiral **arms**. Each step is 21 seeds (a Fibonacci number, so the next seed on the same arm), eased in polar coordinates so the path curves. They turn back at the edge, taper and fade within about ¾ s, and quiet bands nearly vanish.
-- **Light:** a small halo at each head and a faint wash in the low-res layer, plus a soft spill outside the screen. The field turns slowly with overall loudness.
-
 ## Behaviour
 
-- **Double-click** any knob to return it to the current preset's value.
-- **Shift-drag** for fine control. The mouse wheel also works.
-- **Click a value** to type an exact number.
-- **Hover** shows a plain-language tooltip on every control and gives a knob a faint accent rim.
-- **‹ ›** step through presets and wrap around; the field opens the full list.
-- **Freeze** lights its icon and text in the accent colour when on.
+- **Capture:** the first sound after 100 ms of silence is captured once; RESET waits for the next phrase.
+- **Any change** to a setting re-renders the riser within a frame.
+- **LISTEN** plays the selected render through the output and turns itself off at the end unless LOOP is on.
+- **‹ ›** step through factory and user presets and wrap around; the field opens the full list.
+- **Hover** shows a plain-language tooltip on every control.
 
 ## Rules
 
-- **Do:** keep colour for the glow: the visualizer, the hero's lit ticks, the small knobs' value arcs and the Freeze accent. Everything else is surface and text.
-- **Do:** keep Mix the biggest control, whatever you add.
+- **Do:** keep colour for the riser, the hero's lit ticks and the accent on "on" states. The syllable markers are the only red. Everything else is surface and text.
+- **Do:** keep REVERSE the biggest control, whatever you add.
 - **Do:** show state through depth. Raised means available; pressed means selected, active or a place where things sit.
 - **Don't:** use gradient text, coloured borders or saturated fills, and don't add a second accent.
-- **Don't:** use glass or blur as decoration. The only light effect is the screen's spill, which comes from the music.
+- **Don't:** use glass or blur as decoration.
 - **Don't:** use a fixed pixel size. Everything goes through `u`, and new controls get added to the layout test.

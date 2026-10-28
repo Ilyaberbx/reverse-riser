@@ -1,38 +1,60 @@
 #pragma once
 
+#include "ReverbEngine.h"
 #include <array>
 
-// Order of the continuous parameters stored in each preset (Freeze is always off in presets)
-inline constexpr std::array<const char*, 13> presetParamIds {
-    "size", "decay", "predelay", "mix", "damping", "diffusion", "modrate", "moddepth", "width", "shimmer", "spring", "lofi", "output"
-};
-
-// indices into presetParamIds / Preset::values
-namespace Param
-{
-    enum Index { size, decay, predelay, mix, damping, diffusion, modrate, moddepth, width, shimmer, spring, lofi, output };
-}
-
-struct Preset
+// The spaces the riser's reverse reverb can use (REVERB dropdown)
+struct ReverbType
 {
     const char* name;
-    std::array<float, 13> values;
+    ReverbParams params;
 };
 
-// gets the built-in VocalChain (delay, doubler, EQ, de-esser, compression) on top of its knob values
-inline constexpr int lilUziVertPreset = 0;
+// clang-format off
+inline const std::array<ReverbType, 8> reverbTypes { {
+    //                     size  decay  pre  damp diff rate   depth width shim spring lofi
+    { "Small Room",      { 0.25f, 0.5f,   5, 0.45f, 0.70f, 0.6f,  0.15f, 0.8f, 0.0f, 0.0f,  0.0f } },
+    { "Medium Room",     { 0.45f, 1.0f,  12, 0.40f, 0.75f, 0.5f,  0.20f, 0.9f, 0.0f, 0.0f,  0.0f } },
+    { "Chamber",         { 0.55f, 1.6f,  18, 0.30f, 0.85f, 0.4f,  0.25f, 1.0f, 0.0f, 0.0f,  0.0f } },
+    { "Concert Hall",    { 0.85f, 3.2f,  30, 0.35f, 0.80f, 0.3f,  0.30f, 1.0f, 0.0f, 0.0f,  0.0f } },
+    { "Ambient Pad",     { 1.00f, 12.0f, 60, 0.50f, 0.90f, 0.2f,  0.60f, 1.0f, 0.0f, 0.0f,  0.0f } },
+    { "Shimmer Heaven",  { 0.95f, 10.0f, 40, 0.25f, 0.85f, 0.25f, 0.45f, 1.0f, 0.6f, 0.0f,  0.0f } },
+    { "Spring Tank",     { 0.30f, 2.2f,   0, 0.55f, 0.40f, 0.9f,  0.10f, 0.4f, 0.0f, 0.85f, 0.0f } },
+    { "Lo-fi Tape Verb", { 0.60f, 2.5f,  20, 0.60f, 0.70f, 0.4f,  0.35f, 0.7f, 0.0f, 0.0f,  0.7f } },
+} };
+// clang-format on
+
+// used when the REVERB toggle is off
+inline constexpr int defaultReverbType = 3; // Concert Hall
+
+inline constexpr std::array<const char*, 5> lengthNames { "1/4 Bar", "1/2 Bar", "1 Bar", "2 Bars", "4 Bars" };
+inline constexpr std::array<float, 5> lengthBars { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f };
+inline constexpr std::array<const char*, 4> tremoloTimingNames { "1/4", "1/8", "1/16", "1/32" };
+inline constexpr std::array<float, 4> tremoloTimingBeats { 1.0f, 0.5f, 0.25f, 0.125f };
+
+// Order of the values stored in each riser preset (choices as indices, toggles as 0/1)
+inline constexpr std::array<const char*, 14> riserParamIds {
+    "length", "fx", "reverbOn", "reverbType", "chorusOn", "chorusMix", "chorusRate",
+    "tremoloOn", "tremoloMix", "tremoloTiming", "pitchOn", "pitchStart", "pitchEnd", "pitchShape"
+};
+
+namespace Param
+{
+    enum Index { length, fx, reverbOn, reverbType, chorusOn, chorusMix, chorusRate, tremoloOn, tremoloMix, tremoloTiming, pitchOn, pitchStart, pitchEnd, pitchShape };
+}
+
+struct RiserPreset
+{
+    const char* name;
+    std::array<float, riserParamIds.size()> values;
+};
 
 // clang-format off
-inline constexpr std::array<Preset, 9> factoryPresets { {
-    //                      size  decay  pre  mix  damp diff rate  depth width shim spring lofi out
-    { "Lil Uzi Vert",    { 90,   4.5f,  70,  35,  15,  90, 0.35f, 40,  100,  30,   0,     0, -2 } }, // Luv Is Rage 2: bright, wide wash behind dry, upfront vocals
-    { "Small Room",      { 25,   0.5f,   5,  25,  45,  70, 0.6f,  15,   80,   0,   0,     0,  0 } },
-    { "Medium Room",     { 45,   1.0f,  12,  28,  40,  75, 0.5f,  20,   90,   0,   0,     0,  0 } },
-    { "Chamber",         { 55,   1.6f,  18,  30,  30,  85, 0.4f,  25,  100,   0,   0,     0,  0 } },
-    { "Concert Hall",    { 85,   3.2f,  30,  32,  35,  80, 0.3f,  30,  100,   0,   0,     0,  0 } },
-    { "Ambient Pad",     { 100, 12.0f,  60,  45,  50,  90, 0.2f,  60,  100,   0,   0,     0, -3 } },
-    { "Shimmer Heaven",  { 95,  10.0f,  40,  45,  25,  85, 0.25f, 45,  100,  60,   0,     0, -3 } },
-    { "Spring Tank",     { 30,   2.2f,   0,  30,  55,  40, 0.9f,  10,   40,   0,  85,     0,  0 } },
-    { "Lo-fi Tape Verb", { 60,   2.5f,  20,  40,  60,  70, 0.4f,  35,   70,   0,   0,    70,  0 } },
+inline constexpr std::array<RiserPreset, 4> riserPresets { {
+    //              len fx  rvOn type chOn chMix chRate trOn trMix trTime piOn  start end  shape
+    { "Default", { 2,  1,  0,   3,   0,   100,  2.0f,  0,   50,   1,     0,   -12,   0,   0 } },
+    { "Retro",   { 2,  1,  1,   7,   0,   100,  2.0f,  1,   60,   1,     0,   -12,   0,   0 } },
+    { "Wide",    { 3,  1,  1,   4,   1,   100,  0.8f,  0,   50,   1,     0,   -12,   0,   0 } },
+    { "Dreamy",  { 3,  1,  1,   5,   1,    60,  0.5f,  0,   50,   1,     1,   -12,   0,   0.5f } },
 } };
 // clang-format on

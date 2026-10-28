@@ -1,11 +1,12 @@
 #pragma once
 
-#include "PhyllonView.h"
 #include "PluginProcessor.h"
+#include "Theme.h"
 
 //==============================================================================
-// Preset bar, recessed Phýllon screen, hero Mix knob, tabbed secondary knobs, Output.
-// Resizable; everything scales with one unit and the layout switches between portrait and wide.
+// Preset bar, recessed riser display (waveform, RESET, LISTEN/LOOP, RAW|FX, drag to DAW),
+// hero REVERSE knob, FX row (REVERB, CHORUS, TREMOLO, PITCH) with popovers.
+// Resizable; everything scales with one unit.
 class PluginEditor : public juce::AudioProcessorEditor, private juce::Timer
 {
 public:
@@ -20,17 +21,18 @@ public:
 
 private:
     void timerCallback() override;
-    void showTab (int index);
     void stepPreset (int delta);
+    void refreshPresetList();
+    void savePreset();
     void showMenu();
     void applyTheme();
-    void updateResetValues();
+    void showFxPanel (juce::Component& anchor, std::vector<const char*> ids);
 
-    // round raised button with a drawn icon (‹ › ☰)
+    // round raised button with a drawn icon (‹ › 💾 ☰)
     class IconButton : public juce::Button
     {
     public:
-        enum class Icon { previous, next, menu };
+        enum class Icon { previous, next, save, menu };
         IconButton (Icon i, const juce::String& name);
         void setScale (float u);
         void paintButton (juce::Graphics&, bool highlighted, bool down) override;
@@ -49,7 +51,6 @@ private:
         Caption (juce::Slider& source, const juce::String& name, Theme::Type nameRole, Theme::Type valueRole);
         ~Caption() override { slider.removeListener (this); }
         void setScale (float newScale) { scale = newScale; repaint(); }
-        void setJustification (juce::Justification j) { justification = j; }
         void paint (juce::Graphics&) override;
 
     private:
@@ -59,45 +60,87 @@ private:
         juce::String name;
         Theme::Type nameRole, valueRole;
         float scale = 1.0f;
-        juce::Justification justification = juce::Justification::centred;
     };
 
-    struct Knob
+    // power toggle: the icon switches the effect, the name opens its settings
+    class FxButton : public juce::ToggleButton
     {
-        juce::Slider slider { juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::TextBoxBelow };
-        juce::Label label;
-        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attachment;
+    public:
+        explicit FxButton (const juce::String& name) : juce::ToggleButton (name) {}
+        void mouseDown (const juce::MouseEvent&) override;
+        void mouseDrag (const juce::MouseEvent&) override;
+        void mouseUp (const juce::MouseEvent&) override;
+        std::function<void()> onSettings;
+
+    private:
+        bool settingsPress = false;
     };
+
+    // "RAW  FX": which render LISTEN plays and the drag exports
+    class RenderSwitch : public juce::Button
+    {
+    public:
+        RenderSwitch();
+        void setScale (float newU) { u = newU; repaint(); }
+        void paintButton (juce::Graphics&, bool highlighted, bool down) override;
+
+    private:
+        float u = 1.0f;
+    };
+
+    // the recessed screen: riser waveform, syllable markers, pitch curve, drag source
+    class RiserView : public juce::Component
+    {
+    public:
+        explicit RiserView (PluginProcessor&);
+        void setScale (float newU);
+        void paint (juce::Graphics&) override;
+        void resized() override;
+        void mouseEnter (const juce::MouseEvent&) override { repaint(); }
+        void mouseExit (const juce::MouseEvent&) override { repaint(); }
+        void mouseDrag (const juce::MouseEvent&) override;
+        void mouseUp (const juce::MouseEvent&) override { dragging = false; }
+
+        juce::TextButton resetButton { "Reset" }, listenButton { "Listen" }, loopButton { "Loop" };
+        RenderSwitch renderSwitch;
+
+    private:
+        juce::Rectangle<float> waveArea() const;
+        void paintSyllable (juce::Graphics&, juce::Rectangle<float>) const;
+
+        PluginProcessor& processor;
+        juce::AudioProcessorValueTreeState::ButtonAttachment renderAttachment;
+        melatonin::InnerShadow inset;
+        float u = 1.0f;
+        bool dragging = false;
+    };
+
+    class FxPanel;
 
     NeumorphicLookAndFeel theme;
     PluginProcessor& processorRef;
     juce::TooltipWindow tooltips { this, 700 };
 
-    PhyllonAnalyser analyser;
-    PhyllonView phyllon;
-    std::vector<float> incoming = std::vector<float> (PhyllonAnalyser::fftSize * 4);
-    double lastFrameMs = 0.0;
-    int shownProgram = -1;
-
     float u = 1.0f;
-    juce::Rectangle<float> screenArea, tabTrack, gripArea;
-    melatonin::InnerShadow screenInset, trackInset;
+    juce::Rectangle<float> gripArea;
+    int shownProgram = -1;
+    juce::Array<juce::File> userPresets;
+    std::unique_ptr<juce::FileChooser> chooser;
 
     juce::ComboBox presetBox;
     IconButton previousButton { IconButton::Icon::previous, "Previous preset" };
     IconButton nextButton { IconButton::Icon::next, "Next preset" };
+    IconButton saveButton { IconButton::Icon::save, "Save preset" };
     IconButton menuButton { IconButton::Icon::menu, "Menu" };
 
-    std::array<Knob, presetParamIds.size()> knobs;
-    Caption mixCaption { knobs[Param::mix].slider, "Mix", Theme::Type::heroName, Theme::Type::heroValue };
-    Caption outputCaption { knobs[Param::output].slider, "Output", Theme::Type::tab, Theme::Type::knobValue };
+    RiserView riserView { processorRef };
 
-    std::array<juce::TextButton, 3> tabs;
-    std::array<std::vector<Param::Index>, 3> tabKnobs;
-    int currentTab = 0;
+    juce::Slider lengthKnob { juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::NoTextBox };
+    juce::AudioProcessorValueTreeState::SliderAttachment lengthAttachment;
+    Caption lengthCaption { lengthKnob, "Reverse", Theme::Type::heroName, Theme::Type::heroValue };
 
-    juce::ToggleButton freezeButton { "Freeze" };
-    juce::AudioProcessorValueTreeState::ButtonAttachment freezeAttachment;
+    std::array<FxButton, 4> fxButtons { FxButton ("Reverb"), FxButton ("Chorus"), FxButton ("Tremolo"), FxButton ("Pitch") };
+    std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>> fxAttachments;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };

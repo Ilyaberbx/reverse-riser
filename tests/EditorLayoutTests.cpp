@@ -41,8 +41,24 @@ TEST_CASE ("editor layout holds at odd sizes", "[editor][layout]")
                 CHECK (! controls[i]->getBounds().intersects (controls[j]->getBounds()));
             }
 
-        // Mix is the hero at every size
+        // Reverse is the hero at every size
         REQUIRE (largest != nullptr);
-        CHECK (largest->getTitle() == "Mix");
+        CHECK (largest->getTitle() == "Reverse");
+    });
+}
+
+TEST_CASE ("switching presets with the editor open updates the FX toggles", "[editor][presets]")
+{
+    runWithinPluginEditor ([&] (PluginProcessor& plugin) {
+        juce::ToggleButton* pitch = nullptr;
+        for (auto* child : plugin.getActiveEditor()->getChildren())
+            if (auto* toggle = dynamic_cast<juce::ToggleButton*> (child); toggle != nullptr && toggle->getName() == "Pitch")
+                pitch = toggle;
+        REQUIRE (pitch != nullptr);
+
+        plugin.setCurrentProgram (3); // Dreamy: pitch on
+        CHECK (pitch->getToggleState());
+        plugin.setCurrentProgram (0);
+        CHECK (! pitch->getToggleState());
     });
 }

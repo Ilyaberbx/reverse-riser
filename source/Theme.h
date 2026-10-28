@@ -4,7 +4,7 @@
 #include <melatonin_blur/melatonin_blur.h>
 
 // Design system: soft neumorphism in a light and a dark palette, Manrope type, colour only from the
-// Phýllon glow. Everything scales with one unit `u` (1 at the 520×720 base size). See DESIGN.md.
+// glow and the accent. Everything scales with one unit `u` (1 at the 520×720 base size). See DESIGN.md.
 namespace Theme
 {
     // literal ARGB only: juce::Colours::* may not be initialised yet when statics are built
@@ -22,7 +22,7 @@ namespace Theme
     bool isDark();
     void setDark (bool shouldBeDark);
 
-    // one glow hue per Phýllon band, low -> high; the only saturated colours in the UI
+    // glow hues for the hero's lit ticks, low -> high; with the accent, the only saturated colours in the UI
     inline const std::array<juce::Colour, 8> glow {
         juce::Colour (0xff5ee7df), juce::Colour (0xff7fb8ff), juce::Colour (0xff8c7cff), juce::Colour (0xffc77dff),
         juce::Colour (0xffff7eb3), juce::Colour (0xffff9a8b), juce::Colour (0xffffc371), juce::Colour (0xffffe29a)

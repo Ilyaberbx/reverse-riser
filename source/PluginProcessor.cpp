@@ -3,43 +3,67 @@
 
 namespace
 {
+    constexpr float onsetThreshold = 0.01f; // -40 dBFS, same gate as Riser::detectSyllable
+
+    juce::StringArray names (auto const& list)
+    {
+        juce::StringArray result;
+        for (const auto& item : list)
+            result.add (item.name);
+        return result;
+    }
+
+    juce::StringArray names (const char* const* begin, size_t count)
+    {
+        return juce::StringArray (begin, (int) count);
+    }
+
     juce::AudioProcessorValueTreeState::ParameterLayout createLayout()
     {
         using Attributes = juce::AudioParameterFloatAttributes;
         const auto fmt = [] (int decimals, const char* unit) {
             return Attributes().withLabel (unit).withStringFromValueFunction ([decimals] (float v, int) { return juce::String (v, decimals); });
         };
-        const auto percent = fmt (0, "%");
-        const auto range = [] (float lo, float hi, float centre) {
-            juce::NormalisableRange<float> r { lo, hi };
-            r.setSkewForCentre (centre);
-            return r;
-        };
 
-        // added in presetParamIds order; defaults come from the first preset
+        // added in riserParamIds order; defaults come from the first preset
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         size_t index = 0;
-        const auto add = [&] (const char* id, const char* name, juce::NormalisableRange<float> r, Attributes attributes) {
-            jassert (std::string_view (id) == presetParamIds[index]);
-            const auto def = factoryPresets[0].values[index++];
-            layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { id, 1 }, name, r, def, attributes));
+        const auto next = [&] (const char* id) {
+            jassert (std::string_view (id) == riserParamIds[index]);
+            return std::pair { juce::ParameterID { id, 1 }, riserPresets[0].values[index++] };
         };
-        add ("size", "Size", { 0.0f, 100.0f }, percent);
-        add ("decay", "Decay", range (0.1f, 30.0f, 2.0f), fmt (2, "s"));
-        add ("predelay", "Pre-delay", range (0.0f, 250.0f, 40.0f), fmt (0, "ms"));
-        add ("mix", "Mix", { 0.0f, 100.0f }, percent);
-        add ("damping", "Damping", { 0.0f, 100.0f }, percent);
-        add ("diffusion", "Diffusion", { 0.0f, 100.0f }, percent);
-        add ("modrate", "Mod Rate", range (0.05f, 5.0f, 0.5f), fmt (2, "Hz"));
-        add ("moddepth", "Mod Depth", { 0.0f, 100.0f }, percent);
-        add ("width", "Width", { 0.0f, 100.0f }, percent);
-        add ("shimmer", "Shimmer", { 0.0f, 100.0f }, percent);
-        add ("spring", "Spring", { 0.0f, 100.0f }, percent);
-        add ("lofi", "Lo-fi", { 0.0f, 100.0f }, percent);
-        add ("output", "Output", { -24.0f, 12.0f, 0.1f }, fmt (1, "dB")); // step makes 0 dB exact
-        layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "freeze", 1 }, "Freeze", false));
+        const auto addChoice = [&] (const char* id, const char* name, juce::StringArray choices) {
+            const auto [pid, def] = next (id);
+            layout.add (std::make_unique<juce::AudioParameterChoice> (pid, name, choices, (int) def));
+        };
+        const auto addBool = [&] (const char* id, const char* name) {
+            const auto [pid, def] = next (id);
+            layout.add (std::make_unique<juce::AudioParameterBool> (pid, name, def > 0.5f));
+        };
+        const auto addFloat = [&] (const char* id, const char* name, juce::NormalisableRange<float> r, Attributes attributes) {
+            const auto [pid, def] = next (id);
+            layout.add (std::make_unique<juce::AudioParameterFloat> (pid, name, r, def, attributes));
+        };
+
+        addChoice ("length", "Reverse", names (lengthNames.data(), lengthNames.size()));
+        addChoice ("fx", "Render", { "RAW", "FX" });
+        addBool ("reverbOn", "Reverb");
+        addChoice ("reverbType", "Reverb Type", names (reverbTypes));
+        addBool ("chorusOn", "Chorus");
+        addFloat ("chorusMix", "Chorus Mix", { 0.0f, 100.0f }, fmt (0, "%"));
+        addFloat ("chorusRate", "Chorus Rate", { 0.1f, 10.0f, 0.1f }, fmt (1, "Hz"));
+        addBool ("tremoloOn", "Tremolo");
+        addFloat ("tremoloMix", "Tremolo Mix", { 0.0f, 100.0f }, fmt (0, "%"));
+        addChoice ("tremoloTiming", "Tremolo Timing", names (tremoloTimingNames.data(), tremoloTimingNames.size()));
+        addBool ("pitchOn", "Pitch");
+        addFloat ("pitchStart", "Pitch Start", { -24.0f, 24.0f, 1.0f }, fmt (0, "st"));
+        addFloat ("pitchEnd", "Pitch End", { -24.0f, 24.0f, 1.0f }, fmt (0, "st"));
+        addFloat ("pitchShape", "Pitch Shape", { -1.0f, 1.0f }, fmt (2, ""));
         return layout;
     }
+
+    // one-pole release coefficient for a time constant in ms
+    float releaseCoef (double sampleRate, double ms) { return 1.0f - (float) std::exp (-1.0 / (ms * 0.001 * sampleRate)); }
 }
 
 //==============================================================================
@@ -55,8 +79,7 @@ PluginProcessor::PluginProcessor()
        apvts (*this, nullptr, "Parameters", createLayout())
 {
     for (size_t i = 0; i < params.size(); ++i)
-        params[i] = apvts.getRawParameterValue (presetParamIds[i]);
-    freeze = apvts.getRawParameterValue ("freeze");
+        params[i] = apvts.getRawParameterValue (riserParamIds[i]);
 }
 
 PluginProcessor::~PluginProcessor()
@@ -98,15 +121,12 @@ bool PluginProcessor::isMidiEffect() const
 
 double PluginProcessor::getTailLengthSeconds() const
 {
-    if (freeze->load() > 0.5f)
-        return std::numeric_limits<double>::infinity();
-    const auto echoTail = currentProgram.load() == lilUziVertPreset ? 3.0 : 0.0;
-    return params[Param::decay]->load() + params[Param::predelay]->load() * 0.001 + echoTail;
+    return 0.0;
 }
 
 int PluginProcessor::getNumPrograms()
 {
-    return (int) factoryPresets.size();
+    return (int) riserPresets.size();
 }
 
 int PluginProcessor::getCurrentProgram()
@@ -114,25 +134,20 @@ int PluginProcessor::getCurrentProgram()
     return currentProgram.load();
 }
 
-// Applies every preset value; the reverb tail is left ringing and glides to the new settings
 void PluginProcessor::setCurrentProgram (int index)
 {
     if (! juce::isPositiveAndBelow (index, getNumPrograms()))
         return;
 
     currentProgram = index;
-    const auto& preset = factoryPresets[(size_t) index];
-    for (size_t i = 0; i < presetParamIds.size(); ++i)
-    {
-        auto* p = apvts.getParameter (presetParamIds[i]);
-        p->setValueNotifyingHost (p->convertTo0to1 (preset.values[i]));
-    }
-    apvts.getParameter ("freeze")->setValueNotifyingHost (0.0f);
+    const auto& preset = riserPresets[(size_t) index];
+    for (size_t i = 0; i < riserParamIds.size(); ++i)
+        setValue (riserParamIds[i], preset.values[i]);
 }
 
 const juce::String PluginProcessor::getProgramName (int index)
 {
-    return juce::isPositiveAndBelow (index, getNumPrograms()) ? factoryPresets[(size_t) index].name : "";
+    return juce::isPositiveAndBelow (index, getNumPrograms()) ? riserPresets[(size_t) index].name : "";
 }
 
 void PluginProcessor::changeProgramName (int index, const juce::String& newName)
@@ -140,57 +155,33 @@ void PluginProcessor::changeProgramName (int index, const juce::String& newName)
     juce::ignoreUnused (index, newName);
 }
 
+void PluginProcessor::setValue (const char* id, float v)
+{
+    auto* p = apvts.getParameter (id);
+    p->setValueNotifyingHost (p->convertTo0to1 (v));
+}
+
 //==============================================================================
-ReverbParams PluginProcessor::readParams() const
-{
-    const auto pct = [this] (Param::Index i) { return params[i]->load() * 0.01f; };
-    ReverbParams p;
-    p.size = pct (Param::size);
-    p.decaySeconds = params[Param::decay]->load();
-    p.preDelayMs = params[Param::predelay]->load();
-    p.damping = pct (Param::damping);
-    p.diffusion = pct (Param::diffusion);
-    p.modRateHz = params[Param::modrate]->load();
-    p.modDepth = pct (Param::moddepth);
-    p.width = pct (Param::width);
-    p.shimmer = pct (Param::shimmer);
-    p.spring = pct (Param::spring);
-    p.lofi = pct (Param::lofi);
-    p.freeze = freeze->load() > 0.5f;
-    return p;
-}
-
-double PluginProcessor::hostBpm() const
-{
-    if (auto* playHead = getPlayHead())
-        if (const auto position = playHead->getPosition())
-            if (const auto bpm = position->getBpm())
-                return *bpm;
-    return VocalChain::defaultBpm;
-}
-
 void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    engine.prepare (sampleRate, samplesPerBlock);
-    engine.setParameters (readParams(), true);
-    wetBuffer.setSize (2, samplesPerBlock);
+    juce::ignoreUnused (samplesPerBlock);
+    if (! juce::exactlyEqual (sampleRate, sr))
+        needsRender = true;
+    sr = sampleRate;
 
-    vocalChain.prepare (sampleRate, samplesPerBlock);
-    voxBuffer.setSize (2, samplesPerBlock);
-    vocalChainAmount.reset (sampleRate, 0.05);
-    vocalChainAmount.setCurrentAndTargetValue (currentProgram.load() == lilUziVertPreset ? 1.0f : 0.0f);
-    vocalChainRunning = false;
-
-    mix.reset (sampleRate, 0.05);
-    mix.setCurrentAndTargetValue (params[Param::mix]->load() * 0.01f);
-    outputGain.reset (sampleRate, 0.05);
-    outputGain.setCurrentAndTargetValue (juce::Decibels::decibelsToGain (params[Param::output]->load()));
+    captureBuffer.setSize (2, (int) (captureSeconds * sampleRate));
+    if (captureState.load() == recording)
+        captureState = waiting;
+    captureLength = 0;
+    quietNeeded = (int) (silenceBeforeOnsetMs * 0.001 * sampleRate);
+    quietSamples = quietNeeded; // the very first sound counts as an onset
+    gateEnv = 0.0f;
+    gateRelease = releaseCoef (sampleRate, gateReleaseMs);
+    previewPos = 0;
 }
 
 void PluginProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
 }
 
 bool PluginProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -199,13 +190,10 @@ bool PluginProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
     juce::ignoreUnused (layouts);
     return true;
   #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
      && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
-    // This checks if the input layout matches the output layout
    #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
@@ -227,94 +215,232 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     if (numIn == 0)
         return;
 
-    engine.setParameters (readParams());
-    mix.setTargetValue (params[Param::mix]->load() * 0.01f);
-    outputGain.setTargetValue (juce::Decibels::decibelsToGain (params[Param::output]->load()));
-
-    // the vocal chain belongs to one preset; it fades in/out and starts clean each time it switches on
-    const auto vocalChainOn = currentProgram.load() == lilUziVertPreset;
-    vocalChainAmount.setTargetValue (vocalChainOn ? 1.0f : 0.0f);
-    if (vocalChainOn && ! vocalChainRunning)
-        vocalChain.reset();
-    vocalChainRunning = vocalChainOn || vocalChainAmount.isSmoothing();
-    if (vocalChainRunning)
-        vocalChain.setTempo (hostBpm());
+    if (auto* playHead = getPlayHead())
+        if (const auto position = playHead->getPosition())
+            if (const auto tempo = position->getBpm(); tempo && *tempo > 0.0)
+                hostBpm = *tempo;
 
     auto* left = buffer.getWritePointer (0);
     auto* right = numIn > 1 ? buffer.getWritePointer (1) : nullptr;
+    const auto n = buffer.getNumSamples();
 
-    // hosts may send blocks larger than announced, so work in wetBuffer-sized pieces
-    for (int start = 0; start < buffer.getNumSamples(); start += wetBuffer.getNumSamples())
+    // capture: wait for silence, then record from the first onset until the buffer is full
+    if (auto state = captureState.load(); state != done)
     {
-        const auto n = juce::jmin (wetBuffer.getNumSamples(), buffer.getNumSamples() - start);
-        auto* wetL = wetBuffer.getWritePointer (0);
-        auto* wetR = wetBuffer.getWritePointer (1);
-        const float* dryL = left + start;
-        const float* dryR = right != nullptr ? right + start : dryL;
-
-        if (vocalChainRunning)
+        for (int i = 0; i < n && state != done; ++i)
         {
-            auto* voxL = voxBuffer.getWritePointer (0);
-            auto* voxR = voxBuffer.getWritePointer (1);
-            std::copy_n (dryL, n, voxL);
-            std::copy_n (dryR, n, voxR);
-            vocalChain.process (voxL, voxR, n);
-            for (int i = 0; i < n; ++i)
-            {
-                const auto amount = vocalChainAmount.getNextValue();
-                voxL[i] = dryL[i] + amount * (voxL[i] - dryL[i]);
-                voxR[i] = dryR[i] + amount * (voxR[i] - dryR[i]);
-            }
-            dryL = voxL;
-            dryR = voxR;
-        }
+            const auto l = left[i], r = right != nullptr ? right[i] : l;
+            const auto peak = juce::jmax (std::abs (l), std::abs (r));
+            gateEnv = peak > gateEnv ? peak : gateEnv - gateRelease * gateEnv;
 
-        engine.process (dryL, dryR, wetL, wetR, n);
-
-        for (int i = 0; i < n; ++i)
-        {
-            // equal-power dry/wet; mix == 0 leaves dry bit-exact
-            const auto angle = mix.getNextValue() * juce::MathConstants<float>::halfPi;
-            const auto dryGain = std::cos (angle), wetGain = std::sin (angle);
-            const auto gain = outputGain.getNextValue();
-            if (right != nullptr)
+            if (state == waiting)
             {
-                left[start + i] = (dryGain * dryL[i] + wetGain * wetL[i]) * gain;
-                right[start + i] = (dryGain * dryR[i] + wetGain * wetR[i]) * gain;
+                if (gateEnv < onsetThreshold)
+                    quietSamples = juce::jmin (quietSamples + 1, quietNeeded);
+                else if (quietSamples >= quietNeeded)
+                {
+                    state = recording;
+                    captureLength = 0;
+                }
+                else
+                    quietSamples = 0;
             }
-            else
+
+            if (state == recording)
             {
-                left[start + i] = (dryGain * 0.5f * (dryL[i] + dryR[i]) + wetGain * 0.5f * (wetL[i] + wetR[i])) * gain;
+                captureBuffer.setSample (0, captureLength, l);
+                captureBuffer.setSample (1, captureLength, r);
+                if (++captureLength == captureBuffer.getNumSamples())
+                {
+                    state = done;
+                    captureReady = true;
+                }
             }
         }
+        captureState = state;
     }
 
-    pushVisualizerSamples (left, right != nullptr ? right : left, buffer.getNumSamples());
+    // preview: the riser on top of the untouched input
+    if (listening.load() && ! previewBusy.exchange (true))
+    {
+        if (restartPreview.exchange (false))
+            previewPos = 0;
+        const auto length = previewBuffer.getNumSamples();
+        for (int i = 0; i < n; ++i)
+        {
+            if (previewPos >= length)
+            {
+                if (! looping.load() || length == 0)
+                {
+                    listening = false;
+                    break;
+                }
+                previewPos = 0;
+            }
+            const auto l = previewBuffer.getSample (0, previewPos), r = previewBuffer.getSample (1, previewPos);
+            ++previewPos;
+            if (right != nullptr)
+            {
+                left[i] += l;
+                right[i] += r;
+            }
+            else
+                left[i] += 0.5f * (l + r);
+        }
+        previewBusy = false;
+    }
 }
 
-void PluginProcessor::pushVisualizerSamples (const float* left, const float* right, int numSamples)
+//==============================================================================
+std::array<float, riserParamIds.size()> PluginProcessor::settingsSnapshot() const
 {
-    const auto scope = visualizerFifo.write (numSamples);
-    const auto copy = [&] (int destStart, int count, int srcStart) {
-        for (int i = 0; i < count; ++i)
-            visualizerSamples[(size_t) (destStart + i)] = 0.5f * (left[srcStart + i] + right[srcStart + i]);
-    };
-    copy (scope.startIndex1, scope.blockSize1, 0);
-    copy (scope.startIndex2, scope.blockSize2, scope.blockSize1);
+    std::array<float, riserParamIds.size()> values {};
+    for (size_t i = 0; i < values.size(); ++i)
+        values[i] = params[i]->load();
+    return values;
 }
 
-int PluginProcessor::readVisualizerSamples (float* dest, int maxSamples)
+Riser::FxSettings PluginProcessor::fxSettings() const
 {
-    const auto scope = visualizerFifo.read (juce::jmin (maxSamples, visualizerFifo.getNumReady()));
-    std::copy_n (visualizerSamples.begin() + scope.startIndex1, scope.blockSize1, dest);
-    std::copy_n (visualizerSamples.begin() + scope.startIndex2, scope.blockSize2, dest + scope.blockSize1);
-    return scope.blockSize1 + scope.blockSize2;
+    using namespace Param;
+    Riser::FxSettings s;
+    s.pitch = value (pitchOn) > 0.5f;
+    s.pitchStart = value (pitchStart);
+    s.pitchEnd = value (pitchEnd);
+    s.pitchShape = value (pitchShape);
+    s.chorus = value (chorusOn) > 0.5f;
+    s.chorusMix = value (chorusMix) * 0.01f;
+    s.chorusRateHz = value (chorusRate);
+    s.tremolo = value (tremoloOn) > 0.5f;
+    s.tremoloMix = value (tremoloMix) * 0.01f;
+    s.tremoloBeats = tremoloTimingBeats[(size_t) juce::jlimit (0, (int) tremoloTimingBeats.size() - 1, (int) value (tremoloTiming))];
+    return s;
+}
+
+namespace
+{
+    int reverbIndex (float on, float type)
+    {
+        return on > 0.5f ? juce::jlimit (0, (int) reverbTypes.size() - 1, (int) type) : defaultReverbType;
+    }
+}
+
+// ponytail: renders on the message thread; move to a background job if the 4-bar/slow-BPM render ever measures above ~50 ms
+bool PluginProcessor::updateRiser()
+{
+    if (captureState.load() == done && captureReady.exchange (false))
+    {
+        captured.makeCopyOf (captureBuffer);
+        syllable = Riser::detectSyllable (captured, sr);
+        syllableAudio.setSize (2, syllable.getLength());
+        for (int c = 0; c < 2; ++c)
+            syllableAudio.copyFrom (c, 0, captured, c, syllable.getStart(), syllable.getLength());
+        Riser::deEss (syllableAudio, sr);
+        needsRender = true;
+    }
+
+    bool changed = false;
+    const auto settings = settingsSnapshot();
+    const auto tempo = bpm();
+    if (syllableAudio.getNumSamples() > 0 && (needsRender || settings != renderedSettings || std::abs (tempo - renderedBpm) > 0.01))
+    {
+        using namespace Param;
+        const auto bars = lengthBars[(size_t) juce::jlimit (0, (int) lengthBars.size() - 1, (int) settings[length])];
+        const auto& reverb = reverbTypes[(size_t) reverbIndex (settings[reverbOn], settings[reverbType])].params;
+        raw = Riser::renderRaw (syllableAudio, reverb, Riser::lengthInSamples (bars, tempo, sr), sr);
+        fx = Riser::renderFx (raw, fxSettings(), tempo, sr);
+        renderedSettings = settings;
+        renderedBpm = tempo;
+        needsRender = false;
+        changed = true;
+
+        pendingPreview.makeCopyOf (riser());
+        previewPending = true;
+    }
+
+    if (previewPending && ! previewBusy.exchange (true))
+    {
+        std::swap (previewBuffer, pendingPreview); // moves pointers only; the old buffer is freed here, not on the audio thread
+        previewBusy = false;
+        previewPending = false;
+    }
+    return changed;
+}
+
+void PluginProcessor::resetCapture()
+{
+    listening = false;
+    captured.setSize (0, 0);
+    syllableAudio.setSize (0, 0);
+    raw.setSize (0, 0);
+    fx.setSize (0, 0);
+    syllable = {};
+    pendingPreview.setSize (0, 0);
+    previewPending = true;
+    captureReady = false;
+    captureState = waiting;
+}
+
+const juce::AudioBuffer<float>& PluginProcessor::riser() const
+{
+    return value (Param::fx) > 0.5f ? fx : raw;
+}
+
+juce::File PluginProcessor::exportRiser() const
+{
+    using namespace Param;
+    const auto bars = lengthBars[(size_t) juce::jlimit (0, (int) lengthBars.size() - 1, (int) value (length))];
+    const auto reverbName = juce::String (reverbTypes[(size_t) reverbIndex (value (reverbOn), value (reverbType))].name).removeCharacters (" -");
+    auto barsText = juce::String (bars);
+    if (barsText.endsWith (".0"))
+        barsText = barsText.dropLastCharacters (2);
+    const auto name = juce::String ("Riser_") + (value (Param::fx) > 0.5f ? "FX_" : "RAW_") + reverbName + "_"
+                      + barsText + "bars_" + juce::String (juce::roundToInt (renderedBpm)) + "bpm.wav";
+    const auto folder = juce::File::getSpecialLocation (juce::File::tempDirectory).getChildFile ("RiserExports");
+    folder.createDirectory();
+    const auto file = folder.getChildFile (name);
+    return Riser::writeWav (riser(), sr, file) ? file : juce::File();
+}
+
+void PluginProcessor::setListening (bool shouldListen)
+{
+    if (shouldListen)
+        restartPreview = true;
+    listening = shouldListen;
+}
+
+//==============================================================================
+juce::File PluginProcessor::userPresetFolder()
+{
+    return juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
+        .getChildFile (JucePlugin_Manufacturer)
+        .getChildFile (JucePlugin_Name)
+        .getChildFile ("Presets");
+}
+
+void PluginProcessor::saveUserPreset (const juce::File& file) const
+{
+    juce::XmlElement xml ("RiserPreset");
+    for (size_t i = 0; i < riserParamIds.size(); ++i)
+        xml.setAttribute (riserParamIds[i], (double) params[i]->load());
+    file.getParentDirectory().createDirectory();
+    xml.writeTo (file);
+}
+
+void PluginProcessor::loadUserPreset (const juce::File& file)
+{
+    const auto xml = juce::XmlDocument::parse (file);
+    if (xml == nullptr || ! xml->hasTagName ("RiserPreset"))
+        return;
+    for (const auto* id : riserParamIds)
+        if (xml->hasAttribute (id))
+            setValue (id, (float) xml->getDoubleAttribute (id));
 }
 
 //==============================================================================
 bool PluginProcessor::hasEditor() const
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    return true;
 }
 
 juce::AudioProcessorEditor* PluginProcessor::createEditor()
@@ -323,10 +449,20 @@ juce::AudioProcessorEditor* PluginProcessor::createEditor()
 }
 
 //==============================================================================
+// the latched syllable is stored with the settings, so the riser survives a project reload
 void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = apvts.copyState();
-    state.setProperty ("program", currentProgram.load(), nullptr);
+    if (syllable.getLength() > 0)
+    {
+        juce::MemoryBlock audio;
+        for (int c = 0; c < 2; ++c)
+            audio.append (captured.getReadPointer (c, syllable.getStart()), (size_t) syllable.getLength() * sizeof (float));
+        juce::ValueTree capture ("Capture");
+        capture.setProperty ("samples", syllable.getLength(), nullptr);
+        capture.setProperty ("audio", audio.toBase64Encoding(), nullptr);
+        state.appendChild (capture, nullptr);
+    }
     if (const auto xml = state.createXml())
         copyXmlToBinary (*xml, destData);
 }
@@ -337,9 +473,27 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
     if (xml == nullptr || ! xml->hasTagName (apvts.state.getType()))
         return;
 
-    const auto state = juce::ValueTree::fromXml (*xml);
-    currentProgram = juce::jlimit (0, getNumPrograms() - 1, (int) state.getProperty ("program", 0));
+    auto state = juce::ValueTree::fromXml (*xml);
+    const auto capture = state.getChildWithName ("Capture");
+    state.removeChild (capture, nullptr);
     apvts.replaceState (state);
+
+    juce::MemoryBlock audio;
+    const auto samples = (int) capture.getProperty ("samples", 0);
+    if (! capture.isValid() || samples <= 0 || ! audio.fromBase64Encoding (capture.getProperty ("audio").toString())
+        || audio.getSize() != (size_t) samples * 2 * sizeof (float))
+        return;
+
+    // ponytail: the syllable is replayed at the current rate; resample it if sessions move between sample rates
+    resetCapture();
+    captured.setSize (2, samples);
+    for (int c = 0; c < 2; ++c)
+        audio.copyTo (captured.getWritePointer (c), (int) ((size_t) c * (size_t) samples * sizeof (float)), (size_t) samples * sizeof (float));
+    syllable = { 0, samples };
+    syllableAudio.makeCopyOf (captured);
+    Riser::deEss (syllableAudio, sr);
+    captureState = done;
+    needsRender = true;
 }
 
 //==============================================================================

@@ -2,13 +2,11 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "Presets.h"
-#include "ReverbEngine.h"
-#include "VocalChain.h"
+#include "Riser.h"
 
-#if (MSVC)
-#include "ipps.h"
-#endif
-
+// Reverse-reverb riser maker. The input passes through untouched; the first syllable after silence is
+// captured once (until RESET), turned into a bar-synced riser on the message thread, previewed with
+// LISTEN and dragged into the DAW as a WAV.
 class PluginProcessor : public juce::AudioProcessor
 {
 public:
@@ -43,32 +41,65 @@ public:
 
     juce::AudioProcessorValueTreeState apvts;
 
-    // message thread: takes up to maxSamples of the latest mono output for the visualizer (lock-free, single reader)
-    int readVisualizerSamples (float* dest, int maxSamples);
+    //==============================================================================
+    // message thread only
+
+    // picks up a fresh capture and re-renders when it or a setting changed; true if the riser changed
+    bool updateRiser();
+    void resetCapture();
+    bool hasRiser() const { return raw.getNumSamples() > 0; }
+    // RAW or FX, whichever the switch selects
+    const juce::AudioBuffer<float>& riser() const;
+    // the captured audio and where the syllable sits in it (for the markers)
+    const juce::AudioBuffer<float>& capturedAudio() const { return captured; }
+    juce::Range<int> syllableRange() const { return syllable; }
+    Riser::FxSettings fxSettings() const;
+    // writes the riser as a WAV into the temp folder, named like Riser_FX_Chamber_1bars_100bpm.wav
+    juce::File exportRiser() const;
+
+    void setListening (bool shouldListen);
+    bool isListening() const { return listening.load(); }
+    void setLooping (bool shouldLoop) { looping = shouldLoop; }
+
+    // user presets: riser settings only, as XML files
+    static juce::File userPresetFolder();
+    void saveUserPreset (const juce::File& file) const;
+    void loadUserPreset (const juce::File& file);
+
+    double bpm() const { return hostBpm.load(); }
+    static constexpr double defaultBpm = 120.0;
 
 private:
-    ReverbParams readParams() const;
-    double hostBpm() const;
+    float value (Param::Index i) const { return params[i]->load(); }
+    std::array<float, riserParamIds.size()> settingsSnapshot() const;
+    void setValue (const char* id, float v);
 
-    // cached in presetParamIds order, so the audio thread never looks parameters up by name
-    std::array<std::atomic<float>*, presetParamIds.size()> params {};
-    std::atomic<float>* freeze = nullptr;
+    std::array<std::atomic<float>*, riserParamIds.size()> params {};
+    std::atomic<int> currentProgram { 0 };
+    std::atomic<double> hostBpm { defaultBpm };
+    double sr = 44100.0;
 
-    ReverbEngine engine;
-    juce::AudioBuffer<float> wetBuffer;
-    juce::SmoothedValue<float> mix, outputGain;
-    std::atomic<int> currentProgram { 0 }; // read on the audio thread to switch the vocal chain
+    // capture: the audio thread fills captureBuffer while waiting/recording; the message thread reads it once done
+    enum CaptureState { waiting, recording, done };
+    static constexpr double captureSeconds = 1.0, silenceBeforeOnsetMs = 100.0, gateReleaseMs = 50.0;
+    std::atomic<int> captureState { waiting };
+    std::atomic<bool> captureReady { false };
+    juce::AudioBuffer<float> captureBuffer;
+    int captureLength = 0, quietSamples = 0, quietNeeded = 0;
+    float gateEnv = 0.0f, gateRelease = 0.0f;
 
-    VocalChain vocalChain;
-    juce::AudioBuffer<float> voxBuffer;
-    juce::SmoothedValue<float> vocalChainAmount;
-    bool vocalChainRunning = false;
+    // preview: swapped in by the message thread only while it holds previewBusy; the audio thread skips a block if it can't
+    juce::AudioBuffer<float> previewBuffer, pendingPreview;
+    bool previewPending = false;
+    std::atomic<bool> previewBusy { false }, listening { false }, looping { false }, restartPreview { false };
+    int previewPos = 0;
 
-    // audio -> UI: mono output samples; drops samples instead of blocking when the UI isn't reading
-    void pushVisualizerSamples (const float* left, const float* right, int numSamples);
-    static constexpr int visualizerCapacity = 8192;
-    juce::AbstractFifo visualizerFifo { visualizerCapacity };
-    std::array<float, visualizerCapacity> visualizerSamples {};
+    // message thread state
+    juce::AudioBuffer<float> captured, syllableAudio, raw, fx;
+    juce::Range<int> syllable;
+    std::array<float, riserParamIds.size()> renderedSettings {};
+    double renderedBpm = 0.0;
+    std::atomic<bool> needsRender { false };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

@@ -1,0 +1,44 @@
+name: Windows build
+
+# Unsigned Windows build (VST3, CLAP, Standalone). Download it from the run's Artifacts.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    env:
+      ARTIFACTS: Builds/TEST_NAME_REMOVE_ME_LATER_artefacts/Release
+    steps:
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Ninja
+        run: choco install ninja
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure
+        run: cmake -B Builds -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl .
+
+      - name: Build
+        run: cmake --build Builds --config Release
+
+      - name: Upload plugins
+        uses: actions/upload-artifact@v4
+        with:
+          name: Reverse-Riser-Windows
+          path: |
+            ${{ env.ARTIFACTS }}/VST3
+            ${{ env.ARTIFACTS }}/CLAP
+            ${{ env.ARTIFACTS }}/Standalone
+
+      - name: Test
+        run: ctest --test-dir Builds --output-on-failure
