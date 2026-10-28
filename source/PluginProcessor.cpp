@@ -215,8 +215,8 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     if (numIn == 0)
         return;
 
-    if (auto* playHead = getPlayHead())
-        if (const auto position = playHead->getPosition())
+    if (auto* head = getPlayHead())
+        if (const auto position = head->getPosition())
             if (const auto tempo = position->getBpm(); tempo && *tempo > 0.0)
                 hostBpm = *tempo;
 

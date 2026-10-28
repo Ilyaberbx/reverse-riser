@@ -17,7 +17,7 @@ include(JUCEDefaults)
 # This is the internal name of the project and the name of JUCE's shared code target
 # Note: This cannot have spaces (it may be 2024, but you can't have it all!)
 # Worry not, JUCE's PRODUCT_NAME can have spaces (and is what DAWs display)
-set(PROJECT_NAME "TEST_NAME_REMOVE_ME_LATER")
+set(PROJECT_NAME "ReverseRiser")
 
 # Worry not, JUCE's PRODUCT_NAME can have spaces (and is what DAWs will display)
 # You can also just have it be the same thing as PROJECT_NAME
@@ -25,13 +25,13 @@ set(PROJECT_NAME "TEST_NAME_REMOVE_ME_LATER")
 #   set(PROJECT_NAME "MyPlugin_v${MAJOR_VERSION}")
 # Doing so enables major versions to show up in IDEs and DAWs as separate plugins
 # allowing you to change parameters and behavior without breaking existing user projects
-set(PRODUCT_NAME "TEST_NAME_REMOVE_ME_LATER")
+set(PRODUCT_NAME "Reverse Riser")
 
 # Change me! Used for the MacOS bundle name and Installers
 set(COMPANY_NAME "Ilya Berbeka")
 
 # Change me! Used for the MacOS bundle identifier (and signing)
-set(BUNDLE_ID "com.ilyaberbx.test-name-remove-me-later")
+set(BUNDLE_ID "com.ilyaberbx.reverse-riser")
 
 # Change me! Set the plugin formats you want built
 # Valid choices: AAX Unity VST VST3 AU AUv3 Standalone

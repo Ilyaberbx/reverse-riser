@@ -14,7 +14,7 @@ jobs:
   windows:
     runs-on: windows-latest
     env:
-      ARTIFACTS: Builds/TEST_NAME_REMOVE_ME_LATER_artefacts/Release
+      ARTIFACTS: Builds/ReverseRiser_artefacts/Release
     steps:
       - uses: ilammy/msvc-dev-cmd@v1
 

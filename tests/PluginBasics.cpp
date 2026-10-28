@@ -15,7 +15,7 @@ TEST_CASE ("Plugin instance", "[instance]")
     SECTION ("name")
     {
         CHECK_THAT (testPlugin.getName().toStdString(),
-            Catch::Matchers::Equals ("TEST_NAME_REMOVE_ME_LATER"));
+            Catch::Matchers::Equals ("Reverse Riser"));
     }
 
     SECTION ("program name")
