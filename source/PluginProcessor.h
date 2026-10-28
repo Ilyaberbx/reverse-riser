@@ -1,6 +1,8 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include "Presets.h"
+#include "ReverbEngine.h"
 
 #if (MSVC)
 #include "ipps.h"
@@ -38,6 +40,19 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    juce::AudioProcessorValueTreeState apvts;
+
 private:
+    ReverbParams readParams() const;
+
+    // cached in presetParamIds order, so the audio thread never looks parameters up by name
+    std::array<std::atomic<float>*, presetParamIds.size()> params {};
+    std::atomic<float>* freeze = nullptr;
+
+    ReverbEngine engine;
+    juce::AudioBuffer<float> wetBuffer;
+    juce::SmoothedValue<float> mix, outputGain;
+    int currentProgram = 0;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

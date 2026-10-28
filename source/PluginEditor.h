@@ -1,11 +1,9 @@
 #pragma once
 
 #include "PluginProcessor.h"
-#include "BinaryData.h"
-#include "melatonin_inspector/melatonin_inspector.h"
 
 //==============================================================================
-class PluginEditor : public juce::AudioProcessorEditor
+class PluginEditor : public juce::AudioProcessorEditor, private juce::Timer
 {
 public:
     explicit PluginEditor (PluginProcessor&);
@@ -16,10 +14,28 @@ public:
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    void timerCallback() override;
+
+    struct Knob
+    {
+        juce::Slider slider { juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::TextBoxBelow };
+        juce::Label label;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attachment;
+    };
+
+    struct Group
+    {
+        juce::GroupComponent frame;
+        std::vector<Param::Index> knobs;
+    };
+
     PluginProcessor& processorRef;
-    std::unique_ptr<melatonin::Inspector> inspector;
-    juce::TextButton inspectButton { "Inspect the UI" };
+    juce::Label presetLabel { {}, "Preset" };
+    juce::ComboBox presetBox;
+    std::array<Knob, presetParamIds.size()> knobs;
+    std::array<Group, 4> groups;
+    juce::ToggleButton freezeButton { "Freeze" };
+    juce::AudioProcessorValueTreeState::ButtonAttachment freezeAttachment;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };
