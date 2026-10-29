@@ -1,94 +1,80 @@
 /*
-    Dark "Night Ice" theme. Same layout and controls as the light theme: it only redefines the
-    colour tokens and recolours the surfaces that were drawn for a light panel. Everything that is
-    already dark (waveform screen, effect bar, orb well and vortex) keeps its look.
+    Dark theme: near-black matte surfaces with soft graphite edges, keeping the icy cyan accent
+    and the vortex as the only colour. Same layout and controls as the light theme; it only
+    redefines the colour tokens and recolours the surfaces. The ice shards are hidden.
     Rules are scoped to :root[data-theme="dark"], so the light theme is never affected.
 */
 :root[data-theme="dark"] {
-  --bg-deep: #050c17;
-  --bg-navy: #081a30;
+  --bg-deep: #0a0a0b;
+  --bg-navy: #121314;
 
   --blue-primary: #2f9bff;
   --blue-bright: #39a9ff;
   --cyan-highlight: #a7f0ff;
-  --ice-accent: #6fd0ff;            /* accent text on dark glass */
+  --ice-accent: #7fd6ff;            /* accent text on black */
 
-  --text-primary: #dff2ff;
-  --text-secondary: #86a6c4;
-  --text-on-dark: #dff2ff;
+  --text-primary: #e9ebee;
+  --text-secondary: #8b8f96;
+  --text-on-dark: #e9ebee;
 
-  --border-light: rgba(167, 240, 255, 0.2);
-  --border-blue: rgba(75, 161, 255, 0.4);
+  --border-light: rgba(255, 255, 255, 0.07);
+  --border-blue: rgba(75, 161, 255, 0.35);
 
-  --shadow-blue: rgba(30, 137, 255, 0.4);
-  --shadow-deep: rgba(0, 0, 0, 0.7);
+  --shadow-blue: rgba(30, 137, 255, 0.35);
+  --shadow-deep: rgba(0, 0, 0, 0.75);
 
-  /* Dark smoked glass for controls on the panel. */
-  --glass-bg: linear-gradient(180deg, rgba(28, 52, 84, 0.92), rgba(13, 29, 51, 0.92));
-  --glass-border: rgba(167, 240, 255, 0.16);
-  --glass-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(200, 240, 255, 0.12);
+  /* Matte black controls with a hairline edge. */
+  --glass-bg: linear-gradient(180deg, #1c1d20, #141517);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 2px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --hairline: rgba(255, 255, 255, 0.07);
 
-  /* Ice at night: translucent deep-blue shards lit at their edges. */
-  --ice-a0: #c9eeff;
-  --ice-a0-o: 0.5;
-  --ice-a1: #3f95e6;
-  --ice-a1-o: 0.28;
-  --ice-a2: #0b2d5c;
-  --ice-a2-o: 0.5;
-  --ice-b0: #a7e4ff;
-  --ice-b0-o: 0.38;
-  --ice-b1: #16508f;
-  --ice-b1-o: 0.32;
-  --ice-c0: #061a38;
-  --ice-c0-o: 0.6;
-  --ice-c1: #8fd6ff;
-  --ice-c1-o: 0.42;
-  --ice-edge: rgba(167, 240, 255, 0.5);
-  --logo-a: #d6f3ff;
-  --logo-b: #4fb2ff;
+  --logo-a: #f2f3f5;
+  --logo-b: #8b8f96;
 
   color-scheme: dark;
+}
+
+/* No ice shards in the dark theme. */
+:root[data-theme="dark"] .panel-ice,
+:root[data-theme="dark"] .backdrop-ice {
+  display: none;
 }
 
 /* Page and panel ---------------------------------------------------------------------- */
 
 :root[data-theme="dark"] .viewport {
-  background: radial-gradient(ellipse at 50% 40%, #0a1b31 0%, #050c17 60%, #02060d 100%);
+  background: #070708;
 }
 
 :root[data-theme="dark"] .backdrop {
-  background:
-    radial-gradient(ellipse 60% 55% at 50% 45%, rgba(57, 169, 255, 0.16), transparent 70%),
-    linear-gradient(160deg, #081a30 0%, #040b16 55%, #02060c 100%);
+  background: radial-gradient(ellipse 70% 60% at 50% 45%, #121315 0%, #09090a 70%, #060607 100%);
 }
 
 :root[data-theme="dark"] .panel {
   background:
-    radial-gradient(ellipse 50% 40% at 50% 62%, rgba(57, 169, 255, 0.17), transparent 70%),
-    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(167, 240, 255, 0.07), transparent 70%),
-    linear-gradient(180deg, #10223b 0%, #0a172b 48%, #060f1d 100%);
-  border: 1px solid rgba(167, 240, 255, 0.18);
+    radial-gradient(ellipse 45% 38% at 50% 62%, rgba(57, 169, 255, 0.07), transparent 70%),
+    linear-gradient(180deg, #1b1c1e 0%, #151618 45%, #111213 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow:
-    0 28px 60px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(57, 169, 255, 0.22),
-    inset 0 1px 0 rgba(200, 240, 255, 0.2),
-    inset 0 -18px 40px rgba(57, 140, 230, 0.08);
+    0 28px 60px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* Header ------------------------------------------------------------------------------- */
 
 :root[data-theme="dark"] .header {
-  background: linear-gradient(180deg, rgba(22, 44, 72, 0.72), rgba(12, 26, 46, 0.3));
-  border-bottom: 1px solid rgba(167, 240, 255, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0));
+  border-bottom: 1px solid var(--hairline);
 }
 
 :root[data-theme="dark"] .wordmark__light {
-  color: #7fa3c6;
+  color: #8b8f96;
 }
 
 :root[data-theme="dark"] .wordmark__bold {
-  color: #e6f6ff;
-  text-shadow: 0 0 14px rgba(120, 210, 255, 0.35);
+  color: #f2f3f5;
 }
 
 :root[data-theme="dark"] .icon-button {
@@ -98,11 +84,11 @@
 }
 
 :root[data-theme="dark"] .icon-button:hover {
-  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.2), 0 0 14px rgba(57, 169, 255, 0.25), var(--glass-shadow);
+  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.14), var(--glass-shadow);
 }
 
 :root[data-theme="dark"] .icon-button.is-active {
-  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.3), 0 0 16px rgba(57, 169, 255, 0.3);
+  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.22);
 }
 
 :root[data-theme="dark"] .header__ghost .icon-button,
@@ -115,8 +101,8 @@
 :root[data-theme="dark"] .header__ghost .icon-button:hover,
 :root[data-theme="dark"] .menu .icon-button:hover,
 :root[data-theme="dark"] .menu .icon-button.is-active {
-  background: rgba(167, 240, 255, 0.08);
-  box-shadow: 0 0 0 1px rgba(167, 240, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 1px var(--hairline);
 }
 
 :root[data-theme="dark"] .preset__field {
@@ -126,16 +112,16 @@
 }
 
 :root[data-theme="dark"] .preset__nav {
-  border-left-color: rgba(167, 240, 255, 0.12);
+  border-left-color: var(--hairline);
 }
 
 :root[data-theme="dark"] .preset__name:hover,
 :root[data-theme="dark"] .preset__nav:hover {
-  background: rgba(57, 169, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 :root[data-theme="dark"] .preset__nav:active {
-  background: rgba(57, 169, 255, 0.24);
+  background: rgba(255, 255, 255, 0.09);
 }
 
 :root[data-theme="dark"] .preset__modified {
@@ -145,14 +131,14 @@
 /* Popovers, dialog, toast --------------------------------------------------------------- */
 
 :root[data-theme="dark"] .popover {
-  border-color: rgba(167, 240, 255, 0.18);
-  background: rgba(10, 23, 42, 0.97);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(57, 169, 255, 0.14), 0 0 24px rgba(57, 169, 255, 0.12);
+  border-color: var(--glass-border);
+  background: rgba(24, 25, 27, 0.98);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0, 0, 0, 0.5);
 }
 
 :root[data-theme="dark"] .popover__item:hover,
 :root[data-theme="dark"] .popover__item:focus-visible {
-  background: rgba(57, 169, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 :root[data-theme="dark"] .popover__item.is-current {
@@ -160,26 +146,26 @@
 }
 
 :root[data-theme="dark"] .popover__divider {
-  background: rgba(167, 240, 255, 0.1);
+  background: var(--hairline);
 }
 
 :root[data-theme="dark"] .checkbox:not(.is-checked) {
-  border-color: rgba(167, 240, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.28);
 }
 
 :root[data-theme="dark"] .dialog-backdrop {
-  background: rgba(0, 4, 10, 0.55);
+  background: rgba(0, 0, 0, 0.6);
 }
 
 :root[data-theme="dark"] .dialog {
-  border-color: rgba(167, 240, 255, 0.2);
-  background: linear-gradient(180deg, #12263f, #0a172b);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 30px rgba(57, 169, 255, 0.14);
+  border-color: var(--glass-border);
+  background: linear-gradient(180deg, #1c1d20, #141517);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
 }
 
 :root[data-theme="dark"] .dialog__input {
-  border-color: rgba(167, 240, 255, 0.2);
-  background: #071325;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: #0e0f10;
 }
 
 :root[data-theme="dark"] .dialog__error {
@@ -187,109 +173,152 @@
 }
 
 :root[data-theme="dark"] .text-button:not(.is-primary) {
-  border-color: rgba(167, 240, 255, 0.18);
-  background: rgba(30, 54, 86, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 :root[data-theme="dark"] .text-button:not(.is-primary):hover {
-  background: rgba(42, 72, 110, 0.85);
+  background: rgba(255, 255, 255, 0.09);
 }
 
 :root[data-theme="dark"] .toast {
-  background: rgba(4, 12, 24, 0.92);
+  background: rgba(14, 15, 16, 0.95);
 }
 
-/* Waveform: deepened a touch so the screen still reads as inset on the dark panel. */
+/* Waveform: a black screen with a faint cold glow. Recording, lock and drop states keep
+   their own edge glow; only the resting edge becomes a hairline. */
 
 :root[data-theme="dark"] .waveform {
   background:
-    radial-gradient(ellipse 45% 70% at 78% 45%, rgba(57, 169, 255, 0.2), transparent 70%),
-    linear-gradient(180deg, #06172b 0%, #0a2543 60%, #0d2e51 100%);
+    radial-gradient(ellipse 45% 70% at 78% 45%, rgba(57, 169, 255, 0.08), transparent 70%),
+    linear-gradient(180deg, #0c0d0e 0%, #101113 100%);
 }
 
-/* Knobs ---------------------------------------------------------------------------------- */
+:root[data-theme="dark"] .waveform:not(.is-recording):not(.is-locked):not(.is-drop-target) {
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 -20px 40px rgba(0, 0, 0, 0.35), 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme="dark"] .waveform__transport,
+:root[data-theme="dark"] .segmented {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme="dark"] .playback-button + .playback-button {
+  border-left-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Knobs: matte black caps on a graphite rim. ---------------------------------------------- */
 
 :root[data-theme="dark"] .knob__track {
-  stroke: rgba(167, 240, 255, 0.12);
+  stroke: rgba(255, 255, 255, 0.08);
 }
 
-/* Dark ice-steel cap instead of bright silver. */
+/* White value arc with a soft glow (overrides the blue gradient stroke). */
+:root[data-theme="dark"] .knob__value {
+  stroke: #f2f3f5;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.45));
+}
+
+:root[data-theme="dark"] .knob__rim {
+  background: radial-gradient(circle at 50% 30%, #2a2b2e 0%, #161719 60%, #0b0b0c 100%);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+
+:root[data-theme="dark"] .knob:hover .knob__rim,
+:root[data-theme="dark"] .knob.is-dragging .knob__rim {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.12), 0 0 16px rgba(57, 169, 255, 0.25);
+}
+
+:root[data-theme="dark"] .knob:focus-visible .knob__rim {
+  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.5), 0 6px 14px rgba(0, 0, 0, 0.55);
+}
+
 :root[data-theme="dark"] .knob__cap {
   background:
-    radial-gradient(circle at 38% 30%, rgba(200, 236, 255, 0.42), rgba(200, 236, 255, 0) 45%),
-    conic-gradient(from 0deg, #5f7893, #22354b 11%, #506984 24%, #1e2f44 37%, #5a728c 50%, #22344a 62%, #4d6581 75%, #1f3046 88%, #5f7893);
-  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.5), inset 0 2px 2px rgba(200, 240, 255, 0.35);
+    radial-gradient(circle at 38% 28%, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 50%),
+    conic-gradient(from 0deg, #34363a, #1e1f22 12%, #2e3034 25%, #1b1c1f 38%, #323438 50%, #1d1e21 62%, #2c2e32 75%, #1b1c1f 88%, #34363a);
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.12);
 }
 
 :root[data-theme="dark"] .knob__pointer {
-  background: #bff3ff;
-  box-shadow: 0 0 6px rgba(120, 220, 255, 0.9);
+  background: #f2f3f5;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.35);
 }
 
-/* Orb ------------------------------------------------------------------------------------ */
+/* Orb: a matte black bezel; the blue ring and vortex stay as the one point of colour. ----- */
 
 :root[data-theme="dark"] .orb__glow {
-  background: radial-gradient(circle, rgba(57, 169, 255, 0.5) 30%, rgba(57, 169, 255, 0.14) 55%, transparent 70%);
+  background: radial-gradient(circle, rgba(57, 169, 255, 0.2) 30%, rgba(57, 169, 255, 0.05) 55%, transparent 70%);
 }
 
 :root[data-theme="dark"] .orb-scale-line {
-  stroke: rgba(167, 240, 255, 0.1);
+  stroke: rgba(255, 255, 255, 0.06);
 }
 
 :root[data-theme="dark"] .orb-tick:not(.is-lit) {
-  fill: rgba(167, 240, 255, 0.22);
+  fill: rgba(255, 255, 255, 0.16);
 }
 
 :root[data-theme="dark"] .orb-step:not(.is-lit) {
-  fill: rgba(167, 240, 255, 0.3);
+  fill: rgba(255, 255, 255, 0.26);
 }
 
-/* Graphite chrome bezel with cold highlights. */
 :root[data-theme="dark"] .orb__metal {
   background:
-    radial-gradient(circle at 35% 25%, rgba(210, 240, 255, 0.5), rgba(210, 240, 255, 0) 40%),
-    conic-gradient(from 20deg, #6d849c, #22344a 10%, #58728e 22%, #1b2b3f 35%, #67809a 48%, #22354b 60%, #516b88 74%, #1d2e43 87%, #6d849c);
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.6), 0 0 26px rgba(57, 169, 255, 0.2), inset 0 2px 3px rgba(210, 240, 255, 0.5),
-    inset 0 -3px 6px rgba(0, 0, 0, 0.5);
+    radial-gradient(circle at 35% 22%, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 45%),
+    radial-gradient(circle at 50% 50%, #232427 0%, #1a1b1d 70%, #111214 100%);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.6);
 }
 
 :root[data-theme="dark"] .orb__control:focus-visible .orb__metal {
-  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.7), 0 14px 36px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.6), 0 16px 38px rgba(0, 0, 0, 0.7);
+}
+
+:root[data-theme="dark"] .orb__ring {
+  animation-name: ring-pulse-dark;
+}
+
+@keyframes ring-pulse-dark {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(57, 169, 255, 0.45), 0 0 3px rgba(167, 240, 255, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(57, 169, 255, 0.65), 0 0 4px rgba(167, 240, 255, 0.8);
+  }
 }
 
 :root[data-theme="dark"] .orb__label-value {
   color: var(--ice-accent);
-  text-shadow: 0 0 10px rgba(80, 190, 255, 0.45);
 }
 
 /* Effect bar and flyout -------------------------------------------------------------------- */
 
 :root[data-theme="dark"] .mode-selector {
-  border-color: rgba(110, 190, 255, 0.3);
-  background:
-    radial-gradient(ellipse 60% 120% at 50% 120%, rgba(57, 169, 255, 0.18), transparent 70%),
-    linear-gradient(180deg, #0a1f38 0%, #061426 100%);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(167, 240, 255, 0.16),
-    inset 0 -10px 20px rgba(2, 10, 26, 0.35);
+  border-color: rgba(255, 255, 255, 0.07);
+  background: linear-gradient(180deg, #121315 0%, #0d0e0f 100%);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 :root[data-theme="dark"] .mode-flyout {
-  border-color: rgba(167, 240, 255, 0.2);
-  background: linear-gradient(180deg, rgba(20, 40, 68, 0.98), rgba(10, 22, 40, 0.98));
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(57, 169, 255, 0.2), 0 0 22px rgba(57, 169, 255, 0.16);
+  border-color: var(--glass-border);
+  background: linear-gradient(180deg, rgba(30, 31, 34, 0.98), rgba(21, 22, 24, 0.98));
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.5);
 }
 
 :root[data-theme="dark"] .mode-flyout::after {
-  background: rgba(10, 22, 40, 0.98);
-  border-right-color: rgba(167, 240, 255, 0.2);
-  border-bottom-color: rgba(167, 240, 255, 0.2);
+  background: rgba(21, 22, 24, 0.98);
+  border-right-color: var(--glass-border);
+  border-bottom-color: var(--glass-border);
 }
 
 :root[data-theme="dark"] .hslider__track {
-  background: rgba(167, 240, 255, 0.12);
+  background: rgba(255, 255, 255, 0.09);
 }
 
 :root[data-theme="dark"] .hslider__thumb {
-  background: radial-gradient(circle at 40% 35%, #effbff, #8fb4d6);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), 0 0 8px rgba(57, 169, 255, 0.55);
+  background: radial-gradient(circle at 40% 35%, #ffffff, #b8bcc3);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
 }
