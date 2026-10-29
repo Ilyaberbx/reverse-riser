@@ -1,0 +1,20 @@
+# Build output
+build/
+build-*/
+
+# Fetched or generated on configure / npm install
+JUCE/
+third_party/
+ui/node_modules/
+ui/dist/
+
+# Local backups of earlier installs
+old-install-backup/
+
+# Editors and OS
+*.user
+.vs/
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
