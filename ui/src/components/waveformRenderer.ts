@@ -23,6 +23,68 @@ export interface BarLayerInput {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
+/** Colours of the waveform canvases. Strings are "r, g, b" triples; alpha is set where drawn. */
+export interface WaveTint {
+  baseline: string;
+  glow: string;
+  /** EDIT bar colour for a 0..1 level; `original` marks bars of the original phrase. */
+  bar: (norm: number, original: boolean) => string;
+  /** Live-recording bar colour for a 0..1 level. */
+  liveBar: (norm: number) => string;
+  rawOn: string;
+  rawOff: string;
+  selection: string;
+  handle: string;
+  handleGlow: string;
+  notch: string;
+  line: string;
+  particle: string;
+  head: string;
+  headGlow: string;
+}
+
+/** Icy blue (light theme). */
+export const ICE_WAVE: WaveTint = {
+  baseline: "167, 240, 255",
+  glow: "90, 200, 255",
+  bar: (n, original) => `${Math.round(lerp(40, original ? 245 : 225, n))}, ${Math.round(lerp(120, 245, n))}, 255`,
+  liveBar: (n) => `${Math.round(lerp(60, 225, n))}, ${Math.round(lerp(150, 245, n))}, 255`,
+  rawOn: "205, 235, 255",
+  rawOff: "120, 165, 210",
+  selection: "57, 169, 255",
+  handle: "167, 240, 255",
+  handleGlow: "120, 220, 255",
+  notch: "9, 33, 59",
+  line: "57, 169, 255",
+  particle: "190, 235, 255",
+  head: "235, 250, 255",
+  headGlow: "150, 230, 255",
+};
+
+/** White on black (dark theme). */
+export const WHITE_WAVE: WaveTint = {
+  baseline: "255, 255, 255",
+  glow: "255, 255, 255",
+  bar: (n, original) => {
+    const v = Math.round(lerp(150, original ? 255 : 245, n));
+    return `${v}, ${v}, ${Math.min(255, v + 4)}`;
+  },
+  liveBar: (n) => {
+    const v = Math.round(lerp(160, 248, n));
+    return `${v}, ${v}, ${Math.min(255, v + 4)}`;
+  },
+  rawOn: "240, 241, 243",
+  rawOff: "150, 152, 158",
+  selection: "255, 255, 255",
+  handle: "245, 246, 248",
+  handleGlow: "255, 255, 255",
+  notch: "20, 21, 23",
+  line: "255, 255, 255",
+  particle: "235, 236, 240",
+  head: "255, 255, 255",
+  headGlow: "255, 255, 255",
+};
+
 function bucketMax(peaks: number[], from: number, to: number) {
   const n = peaks.length;
   const s0 = Math.floor(from * n);
@@ -40,12 +102,12 @@ export function fractionForX(x: number) {
   return Math.min(1, Math.max(0, (x - PAD_X) / INNER_W));
 }
 
-export function drawBarLayer(ctx: CanvasRenderingContext2D, input: BarLayerInput) {
+export function drawBarLayer(ctx: CanvasRenderingContext2D, input: BarLayerInput, tint: WaveTint = ICE_WAVE) {
   ctx.clearRect(0, 0, WAVE_W, WAVE_H);
   const { view, peaks } = input;
 
   // Fine dotted baseline.
-  ctx.fillStyle = "rgba(167, 240, 255, 0.38)";
+  ctx.fillStyle = `rgba(${tint.baseline}, 0.38)`;
   for (let x = PAD_X; x <= WAVE_W - PAD_X; x += 6) {
     ctx.beginPath();
     ctx.arc(x, CENTER_Y, 0.9, 0, Math.PI * 2);
@@ -72,15 +134,12 @@ export function drawBarLayer(ctx: CanvasRenderingContext2D, input: BarLayerInput
     if (half < 1.4) continue;   // the dotted baseline already shows silence
 
     if (view === "edit") {
-      const g = Math.round(lerp(120, 245, norm));
-      const b = 255;
-      const r = Math.round(lerp(40, isOriginal ? 245 : 225, norm));
-      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${lerp(0.55, 1, norm)})`;
-      ctx.shadowColor = "rgba(90, 200, 255, 0.95)";
+      ctx.fillStyle = `rgba(${tint.bar(norm, isOriginal)}, ${lerp(0.55, 1, norm)})`;
+      ctx.shadowColor = `rgba(${tint.glow}, 0.95)`;
       ctx.shadowBlur = 3 + 11 * norm;
     } else {
-      ctx.fillStyle = inSelection ? "rgba(205, 235, 255, 0.92)" : "rgba(120, 165, 210, 0.28)";
-      ctx.shadowColor = "rgba(90, 200, 255, 0.7)";
+      ctx.fillStyle = inSelection ? `rgba(${tint.rawOn}, 0.92)` : `rgba(${tint.rawOff}, 0.28)`;
+      ctx.shadowColor = `rgba(${tint.glow}, 0.7)`;
       ctx.shadowBlur = inSelection ? 4 : 0;
     }
 
@@ -110,12 +169,12 @@ export function drawBarLayer(ctx: CanvasRenderingContext2D, input: BarLayerInput
     const top = CENTER_Y - MAX_HALF - 2;
     const bottom = CENTER_Y + MAX_HALF + 2;
 
-    ctx.fillStyle = "rgba(57, 169, 255, 0.10)";
+    ctx.fillStyle = `rgba(${tint.selection}, 0.10)`;
     ctx.fillRect(x0, top, x1 - x0, bottom - top);
 
-    ctx.shadowColor = "rgba(120, 220, 255, 0.9)";
+    ctx.shadowColor = `rgba(${tint.handleGlow}, 0.9)`;
     ctx.shadowBlur = 8;
-    ctx.fillStyle = "#a7f0ff";
+    ctx.fillStyle = `rgb(${tint.handle})`;
     for (const x of [x0, x1]) {
       ctx.fillRect(x - 1, top, 2, bottom - top);
       ctx.beginPath();
@@ -123,7 +182,7 @@ export function drawBarLayer(ctx: CanvasRenderingContext2D, input: BarLayerInput
       ctx.fill();
     }
     ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(9, 33, 59, 0.85)";
+    ctx.fillStyle = `rgba(${tint.notch}, 0.85)`;
     for (const x of [x0, x1]) {
       ctx.fillRect(x - 1.5, CENTER_Y - 6, 1, 12);
       ctx.fillRect(x + 0.5, CENTER_Y - 6, 1, 12);
@@ -147,7 +206,7 @@ const PARTICLES: Particle[] = (() => {
   }));
 })();
 
-export function drawAtmosphere(ctx: CanvasRenderingContext2D, t: number, emphasis: number[]) {
+export function drawAtmosphere(ctx: CanvasRenderingContext2D, t: number, emphasis: number[], tint: WaveTint = ICE_WAVE) {
   ctx.clearRect(0, 0, WAVE_W, WAVE_H);
 
   // Liquid lines: low-opacity sines whose amplitude follows the waveform's energy.
@@ -165,7 +224,7 @@ export function drawAtmosphere(ctx: CanvasRenderingContext2D, t: number, emphasi
   ];
 
   for (const l of lines) {
-    ctx.strokeStyle = `rgba(57, 169, 255, ${l.alpha})`;
+    ctx.strokeStyle = `rgba(${tint.line}, ${l.alpha})`;
     ctx.lineWidth = l.width;
     ctx.beginPath();
     for (let x = 0; x <= WAVE_W; x += 8) {
@@ -180,17 +239,17 @@ export function drawAtmosphere(ctx: CanvasRenderingContext2D, t: number, emphasi
   for (const p of PARTICLES) {
     const x = (p.x + t * p.speed) % WAVE_W;
     const a = 0.12 + 0.28 * (0.5 + 0.5 * Math.sin(t * 0.9 + p.phase));
-    ctx.fillStyle = `rgba(190, 235, 255, ${a})`;
+    ctx.fillStyle = `rgba(${tint.particle}, ${a})`;
     ctx.beginPath();
     ctx.arc(x, p.y + Math.sin(t * 0.4 + p.phase) * 3, p.r, 0, Math.PI * 2);
     ctx.fill();
   }
 }
 
-export function drawPlayhead(ctx: CanvasRenderingContext2D, fraction: number, active: boolean) {
+export function drawPlayhead(ctx: CanvasRenderingContext2D, fraction: number, active: boolean, tint: WaveTint = ICE_WAVE) {
   const x = xForFraction(fraction);
-  ctx.fillStyle = active ? "rgba(255, 255, 255, 0.95)" : "rgba(235, 248, 255, 0.75)";
-  ctx.shadowColor = "rgba(150, 225, 255, 0.95)";
+  ctx.fillStyle = active ? "rgba(255, 255, 255, 0.95)" : `rgba(${tint.head}, 0.75)`;
+  ctx.shadowColor = `rgba(${tint.headGlow}, 0.95)`;
   ctx.shadowBlur = active ? 10 : 4;
   ctx.fillRect(x - 1, CENTER_Y - MAX_HALF - 4, 2, MAX_HALF * 2 + 8);
   ctx.shadowBlur = 0;
@@ -205,7 +264,9 @@ export const LIVE_BARS = Math.ceil(INNER_W / LIVE_SPACING) + 2;
     scrolling left. `shift` (0..1) is how far the next bar has slid in, for smooth motion.
     Silence still shows a gentle travelling ripple so recording is visibly alive.
 */
-export function drawLiveWave(ctx: CanvasRenderingContext2D, levels: number[], shift: number, t: number) {
+export function drawLiveWave(
+  ctx: CanvasRenderingContext2D, levels: number[], shift: number, t: number, tint: WaveTint = ICE_WAVE,
+) {
   const right = PAD_X + INNER_W;
   const maxHalf = MAX_HALF;   // the band is already clear of the buttons
   const headHalf = MAX_HALF * 0.75;
@@ -223,10 +284,8 @@ export function drawLiveWave(ctx: CanvasRenderingContext2D, levels: number[], sh
     const fadeIn = Math.min(1, (x - PAD_X) / 120); // older bars dissolve on the left
     const alpha = Math.max(0, fadeIn) * (0.45 + 0.55 * Math.max(norm, 0.25));
 
-    const g = Math.round(lerp(150, 245, norm));
-    const r = Math.round(lerp(60, 225, norm));
-    ctx.fillStyle = `rgba(${r}, ${g}, 255, ${alpha})`;
-    ctx.shadowColor = "rgba(90, 200, 255, 0.9)";
+    ctx.fillStyle = `rgba(${tint.liveBar(norm)}, ${alpha})`;
+    ctx.shadowColor = `rgba(${tint.glow}, 0.9)`;
     ctx.shadowBlur = 3 + 10 * norm;
     ctx.beginPath();
     ctx.roundRect(x - barW / 2, CENTER_Y - half, barW, half * 2, barW / 2);
@@ -236,13 +295,13 @@ export function drawLiveWave(ctx: CanvasRenderingContext2D, levels: number[], sh
   // Write head: a soft pulsing line where new audio arrives.
   const pulse = 0.55 + 0.45 * Math.sin(t * 4);
   const grad = ctx.createLinearGradient(right - 40, 0, right + 6, 0);
-  grad.addColorStop(0, "rgba(167, 240, 255, 0)");
-  grad.addColorStop(1, `rgba(167, 240, 255, ${0.18 * pulse})`);
+  grad.addColorStop(0, `rgba(${tint.baseline}, 0)`);
+  grad.addColorStop(1, `rgba(${tint.baseline}, ${0.18 * pulse})`);
   ctx.shadowBlur = 0;
   ctx.fillStyle = grad;
   ctx.fillRect(right - 40, CENTER_Y - headHalf, 46, headHalf * 2);
-  ctx.fillStyle = `rgba(235, 250, 255, ${0.5 + 0.5 * pulse})`;
-  ctx.shadowColor = "rgba(150, 230, 255, 1)";
+  ctx.fillStyle = `rgba(${tint.head}, ${0.5 + 0.5 * pulse})`;
+  ctx.shadowColor = `rgba(${tint.headGlow}, 1)`;
   ctx.shadowBlur = 12;
   ctx.fillRect(right + 4, CENTER_Y - headHalf, 2, headHalf * 2);
   ctx.shadowBlur = 0;

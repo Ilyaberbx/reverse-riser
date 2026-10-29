@@ -37,31 +37,71 @@ function makeFilaments(count: number): Filament[] {
 const FILAMENTS = makeFilaments(110);
 const STEPS = 46;
 
-export function drawVortex(ctx: CanvasRenderingContext2D, size: number, rotation: number, amount: number) {
+type Stops = [number, string][];
+
+/** Colours of the vortex. `eyeRim` and `highlight` are "r, g, b" triples (alpha is set in place). */
+export interface VortexPalette {
+  body: Stops;
+  glow: Stops;
+  hole: [string, string, string];
+  eyeRim: string;
+  rimShadow: string;
+  highlight: string;
+}
+
+/** Blue water and icy filaments (light theme). */
+export const ICE_VORTEX: VortexPalette = {
+  body: [[0, "#01050d"], [0.18, "#031230"], [0.5, "#08306a"], [0.82, "#0d4f9e"], [1, "#0a2c5c"]],
+  glow: [
+    [0, "rgba(120, 200, 255, 0)"],
+    [0.22, "rgba(110, 200, 255, 0.55)"],
+    [0.55, "rgba(167, 240, 255, 0.95)"],
+    [0.85, "rgba(80, 170, 255, 0.85)"],
+    [1, "rgba(40, 120, 255, 0.2)"],
+  ],
+  hole: ["rgba(0, 4, 12, 0.97)", "rgba(1, 10, 28, 0.62)", "rgba(1, 10, 28, 0)"],
+  eyeRim: "167, 240, 255",
+  rimShadow: "2, 10, 26",
+  highlight: "220, 245, 255",
+};
+
+/** White filaments on a black well (dark theme). */
+export const WHITE_VORTEX: VortexPalette = {
+  body: [[0, "#020202"], [0.18, "#060607"], [0.5, "#111214"], [0.82, "#1c1d20"], [1, "#101113"]],
+  glow: [
+    [0, "rgba(255, 255, 255, 0)"],
+    [0.22, "rgba(235, 237, 240, 0.5)"],
+    [0.55, "rgba(255, 255, 255, 0.95)"],
+    [0.85, "rgba(220, 223, 228, 0.8)"],
+    [1, "rgba(200, 204, 210, 0.2)"],
+  ],
+  hole: ["rgba(0, 0, 0, 0.97)", "rgba(2, 2, 3, 0.62)", "rgba(2, 2, 3, 0)"],
+  eyeRim: "255, 255, 255",
+  rimShadow: "0, 0, 0",
+  highlight: "255, 255, 255",
+};
+
+const gradient = (g: CanvasGradient, stops: Stops) => {
+  for (const [at, colour] of stops) g.addColorStop(at, colour);
+  return g;
+};
+
+export function drawVortex(
+  ctx: CanvasRenderingContext2D, size: number, rotation: number, amount: number, palette: VortexPalette = ICE_VORTEX,
+) {
   const R = size / 2;
   ctx.save();
   ctx.clearRect(0, 0, size, size);
   ctx.translate(R, R);
 
   // Deep water body.
-  const body = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
-  body.addColorStop(0, "#01050d");
-  body.addColorStop(0.18, "#031230");
-  body.addColorStop(0.5, "#08306a");
-  body.addColorStop(0.82, "#0d4f9e");
-  body.addColorStop(1, "#0a2c5c");
-  ctx.fillStyle = body;
+  ctx.fillStyle = gradient(ctx.createRadialGradient(0, 0, 0, 0, 0, R), palette.body);
   ctx.beginPath();
   ctx.arc(0, 0, R, 0, Math.PI * 2);
   ctx.fill();
 
   // Filaments.
-  const glow = ctx.createRadialGradient(0, 0, R * 0.04, 0, 0, R);
-  glow.addColorStop(0, "rgba(120, 200, 255, 0)");
-  glow.addColorStop(0.22, "rgba(110, 200, 255, 0.55)");
-  glow.addColorStop(0.55, "rgba(167, 240, 255, 0.95)");
-  glow.addColorStop(0.85, "rgba(80, 170, 255, 0.85)");
-  glow.addColorStop(1, "rgba(40, 120, 255, 0.2)");
+  const glow = gradient(ctx.createRadialGradient(0, 0, R * 0.04, 0, 0, R), palette.glow);
 
   ctx.globalCompositeOperation = "lighter";
   ctx.strokeStyle = glow;
@@ -95,9 +135,9 @@ export function drawVortex(ctx: CanvasRenderingContext2D, size: number, rotation
   // Central depth.
   const holeR = R * eye * 1.45;
   const hole = ctx.createRadialGradient(0, 0, 0, 0, 0, holeR);
-  hole.addColorStop(0, "rgba(0, 4, 12, 0.97)");
-  hole.addColorStop(0.5, "rgba(1, 10, 28, 0.62)");
-  hole.addColorStop(1, "rgba(1, 10, 28, 0)");
+  hole.addColorStop(0, palette.hole[0]);
+  hole.addColorStop(0.5, palette.hole[1]);
+  hole.addColorStop(1, palette.hole[2]);
   ctx.fillStyle = hole;
   ctx.beginPath();
   ctx.arc(0, 0, holeR, 0, Math.PI * 2);
@@ -106,9 +146,9 @@ export function drawVortex(ctx: CanvasRenderingContext2D, size: number, rotation
   // A faint icy rim marks the edge of the opening, so its narrowing and widening reads clearly.
   const rimIn = R * eye * 0.8, rimOut = R * eye * 1.3;
   const eyeRim = ctx.createRadialGradient(0, 0, rimIn, 0, 0, rimOut);
-  eyeRim.addColorStop(0, "rgba(167, 240, 255, 0)");
-  eyeRim.addColorStop(0.5, "rgba(167, 240, 255, 0.16)");
-  eyeRim.addColorStop(1, "rgba(167, 240, 255, 0)");
+  eyeRim.addColorStop(0, `rgba(${palette.eyeRim}, 0)`);
+  eyeRim.addColorStop(0.5, `rgba(${palette.eyeRim}, 0.16)`);
+  eyeRim.addColorStop(1, `rgba(${palette.eyeRim}, 0)`);
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = eyeRim;
   ctx.beginPath();
@@ -118,8 +158,8 @@ export function drawVortex(ctx: CanvasRenderingContext2D, size: number, rotation
 
   // Rim shadow for a concave feel.
   const rim = ctx.createRadialGradient(0, 0, R * 0.78, 0, 0, R);
-  rim.addColorStop(0, "rgba(2, 10, 26, 0)");
-  rim.addColorStop(1, "rgba(2, 10, 26, 0.75)");
+  rim.addColorStop(0, `rgba(${palette.rimShadow}, 0)`);
+  rim.addColorStop(1, `rgba(${palette.rimShadow}, 0.75)`);
   ctx.fillStyle = rim;
   ctx.beginPath();
   ctx.arc(0, 0, R, 0, Math.PI * 2);
@@ -127,8 +167,8 @@ export function drawVortex(ctx: CanvasRenderingContext2D, size: number, rotation
 
   // Soft white-blue highlight in the upper left.
   const hi = ctx.createRadialGradient(-R * 0.38, -R * 0.45, 0, -R * 0.38, -R * 0.45, R * 0.6);
-  hi.addColorStop(0, "rgba(220, 245, 255, 0.28)");
-  hi.addColorStop(1, "rgba(220, 245, 255, 0)");
+  hi.addColorStop(0, `rgba(${palette.highlight}, 0.28)`);
+  hi.addColorStop(1, `rgba(${palette.highlight}, 0)`);
   ctx.fillStyle = hi;
   ctx.beginPath();
   ctx.arc(0, 0, R, 0, Math.PI * 2);

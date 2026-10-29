@@ -1,6 +1,6 @@
 /*
-    Dark theme: near-black matte surfaces with soft graphite edges, keeping the icy cyan accent
-    and the vortex as the only colour. Same layout and controls as the light theme; it only
+    Dark theme: near-black matte surfaces with soft graphite edges and white as the only
+    accent: the orb, waveform, switches and buttons glow white instead of ice blue. Same layout and controls as the light theme; it only
     redefines the colour tokens and recolours the surfaces. The ice shards are hidden.
     Rules are scoped to :root[data-theme="dark"], so the light theme is never affected.
 */
@@ -8,10 +8,11 @@
   --bg-deep: #0a0a0b;
   --bg-navy: #121314;
 
-  --blue-primary: #2f9bff;
-  --blue-bright: #39a9ff;
-  --cyan-highlight: #a7f0ff;
-  --ice-accent: #7fd6ff;            /* accent text on black */
+  /* The accent tokens turn white: lit ticks, slider fills, focus rings and active states follow. */
+  --blue-primary: #f2f3f5;
+  --blue-bright: #ffffff;
+  --cyan-highlight: #ffffff;
+  --ice-accent: #ffffff;            /* accent text on black */
 
   --text-primary: #e9ebee;
   --text-secondary: #8b8f96;
@@ -20,7 +21,7 @@
   --border-light: rgba(255, 255, 255, 0.07);
   --border-blue: rgba(75, 161, 255, 0.35);
 
-  --shadow-blue: rgba(30, 137, 255, 0.35);
+  --shadow-blue: rgba(255, 255, 255, 0.12);
   --shadow-deep: rgba(0, 0, 0, 0.75);
 
   /* Matte black controls with a hairline edge. */
@@ -29,8 +30,8 @@
   --glass-shadow: 0 2px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --hairline: rgba(255, 255, 255, 0.07);
 
-  --logo-a: #e4effb;   /* the mark's own dark-mode ice (#bcd6f5) */
-  --logo-b: #bcd6f5;
+  --logo-a: #ffffff;
+  --logo-b: #c9ccd1;
 
   color-scheme: dark;
 }
@@ -53,7 +54,7 @@
 
 :root[data-theme="dark"] .panel {
   background:
-    radial-gradient(ellipse 45% 38% at 50% 62%, rgba(57, 169, 255, 0.07), transparent 70%),
+    radial-gradient(ellipse 45% 38% at 50% 62%, rgba(255, 255, 255, 0.07), transparent 70%),
     linear-gradient(180deg, #1b1c1e 0%, #151618 45%, #111213 100%);
   border: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow:
@@ -84,11 +85,11 @@
 }
 
 :root[data-theme="dark"] .icon-button:hover {
-  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.14), var(--glass-shadow);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.14), var(--glass-shadow);
 }
 
 :root[data-theme="dark"] .icon-button.is-active {
-  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.22);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.22);
 }
 
 :root[data-theme="dark"] .header__ghost .icon-button,
@@ -190,7 +191,7 @@
 
 :root[data-theme="dark"] .waveform {
   background:
-    radial-gradient(ellipse 45% 70% at 78% 45%, rgba(57, 169, 255, 0.08), transparent 70%),
+    radial-gradient(ellipse 45% 70% at 78% 45%, rgba(255, 255, 255, 0.08), transparent 70%),
     linear-gradient(180deg, #0c0d0e 0%, #101113 100%);
 }
 
@@ -227,11 +228,11 @@
 
 :root[data-theme="dark"] .knob:hover .knob__rim,
 :root[data-theme="dark"] .knob.is-dragging .knob__rim {
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.12), 0 0 16px rgba(57, 169, 255, 0.25);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.12), 0 0 16px rgba(255, 255, 255, 0.25);
 }
 
 :root[data-theme="dark"] .knob:focus-visible .knob__rim {
-  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.5), 0 6px 14px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 6px 14px rgba(0, 0, 0, 0.55);
 }
 
 :root[data-theme="dark"] .knob__cap {
@@ -249,7 +250,7 @@
 /* Orb: a matte black bezel; the blue ring and vortex stay as the one point of colour. ----- */
 
 :root[data-theme="dark"] .orb__glow {
-  background: radial-gradient(circle, rgba(57, 169, 255, 0.2) 30%, rgba(57, 169, 255, 0.05) 55%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 30%, rgba(255, 255, 255, 0.05) 55%, transparent 70%);
 }
 
 :root[data-theme="dark"] .orb-scale-line {
@@ -273,7 +274,7 @@
 }
 
 :root[data-theme="dark"] .orb__control:focus-visible .orb__metal {
-  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.6), 0 16px 38px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6), 0 16px 38px rgba(0, 0, 0, 0.7);
 }
 
 :root[data-theme="dark"] .orb__ring {
@@ -283,10 +284,10 @@
 @keyframes ring-pulse-dark {
   0%,
   100% {
-    box-shadow: 0 0 10px rgba(57, 169, 255, 0.45), 0 0 3px rgba(167, 240, 255, 0.6);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.45), 0 0 3px rgba(255, 255, 255, 0.6);
   }
   50% {
-    box-shadow: 0 0 16px rgba(57, 169, 255, 0.65), 0 0 4px rgba(167, 240, 255, 0.8);
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.65), 0 0 4px rgba(255, 255, 255, 0.8);
   }
 }
 
@@ -321,4 +322,149 @@
 :root[data-theme="dark"] .hslider__thumb {
   background: radial-gradient(circle at 40% 35%, #ffffff, #b8bcc3);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+}
+
+/* The well behind the vortex canvas matches its black body. */
+:root[data-theme="dark"] .orb__well {
+  background: #0b0b0c;
+}
+
+/* White accents ---------------------------------------------------------------------------- */
+
+/* Orb: a white-silver ring around the vortex, white lit ticks and indicator glow. */
+:root[data-theme="dark"] .orb__ring {
+  background: conic-gradient(from 200deg, #8e9299, #e4e6e9, #ffffff, #e4e6e9, #8e9299, #c6c9ce, #8e9299);
+}
+
+:root[data-theme="dark"] .orb-step.is-lit {
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
+}
+
+:root[data-theme="dark"] .orb__indicator line {
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.9));
+}
+
+:root[data-theme="dark"] .orb__label-value {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+}
+
+/* Effect switches: off is muted grey, on glows white like a neon tube. */
+:root[data-theme="dark"] .mode-selector__option {
+  color: rgba(160, 163, 170, 0.6);
+}
+
+:root[data-theme="dark"] .mode-selector__option:hover:not(.is-on) {
+  color: rgba(205, 208, 213, 0.9);
+}
+
+:root[data-theme="dark"] .mode-selector__option.is-on {
+  color: #ffffff;
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.9),
+    0 0 8px rgba(255, 255, 255, 0.75),
+    0 0 18px rgba(255, 255, 255, 0.45),
+    0 0 32px rgba(255, 255, 255, 0.22);
+}
+
+:root[data-theme="dark"] .mode-selector__option.is-on svg {
+  color: #ffffff;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.6))
+    drop-shadow(0 0 16px rgba(255, 255, 255, 0.3));
+}
+
+:root[data-theme="dark"] .mode-selector__option::before {
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 70%);
+}
+
+:root[data-theme="dark"] .hslider__fill {
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.45);
+}
+
+/* Waveform display: neutral white text and buttons, white active and state glows. */
+:root[data-theme="dark"] .waveform__reset {
+  color: rgba(235, 237, 240, 0.8);
+}
+
+:root[data-theme="dark"] .waveform__lock {
+  color: rgba(160, 163, 170, 0.6);
+}
+
+:root[data-theme="dark"] .waveform__lock:hover,
+:root[data-theme="dark"] .waveform__reset:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+:root[data-theme="dark"] .waveform__lock.is-on {
+  color: #ffffff;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 255, 255, 0.6), 0 0 18px rgba(255, 255, 255, 0.3);
+}
+
+:root[data-theme="dark"] .waveform__lock.is-on svg {
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+}
+
+:root[data-theme="dark"] .playback-button {
+  color: rgba(235, 237, 240, 0.85);
+}
+
+:root[data-theme="dark"] .playback-button:hover:not(:disabled),
+:root[data-theme="dark"] .segmented__option:hover:not(.is-active) {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .playback-button.is-active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 -2px 0 #ffffff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+:root[data-theme="dark"] .segmented__option {
+  color: rgba(235, 237, 240, 0.7);
+}
+
+:root[data-theme="dark"] .segmented__option.is-active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45), 0 0 12px rgba(255, 255, 255, 0.14);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+:root[data-theme="dark"] .waveform.is-recording {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -20px 40px rgba(0, 0, 0, 0.35), 0 0 22px rgba(255, 255, 255, 0.14);
+}
+
+:root[data-theme="dark"] .waveform.is-locked {
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 18px rgba(255, 255, 255, 0.06),
+    inset 0 -20px 40px rgba(0, 0, 0, 0.35), 0 0 16px rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme="dark"] .waveform.is-drop-target {
+  border-color: #ffffff;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.45), 0 0 24px rgba(255, 255, 255, 0.2);
+}
+
+:root[data-theme="dark"] .waveform__drop {
+  border-color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* Elsewhere: white checks and the primary button turn white with dark text. */
+:root[data-theme="dark"] .checkbox.is-checked {
+  color: #111214;
+}
+
+:root[data-theme="dark"] .text-button.is-primary {
+  background: linear-gradient(180deg, #ffffff, #dfe1e5);
+  color: #111214;
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.12);
+}
+
+:root[data-theme="dark"] .toast {
+  border-color: rgba(255, 255, 255, 0.15);
 }

@@ -2,7 +2,8 @@ import { useRef } from "react";
 import { REVERSE_BARS, REVERSE_CHOICES, REVERSE_DEFAULT } from "../params";
 import { sizeCanvas, useAnimationFrame, usePrefersReducedMotion } from "./useAnimationFrame";
 import { arcPath, normalise, sweepAngle, useRotary } from "./useRotary";
-import { drawVortex } from "./vortex";
+import { useTheme } from "../theme";
+import { drawVortex, ICE_VORTEX, WHITE_VORTEX } from "./vortex";
 
 const BOX = 296;          // full control including the tick scale
 const C = BOX / 2;
@@ -26,6 +27,7 @@ export function ReverseOrb({ value, tailSeconds, onChange, onGestureStart, onGes
   // clock, so turning the knob changes how fast it turns without making it jump or race.
   const motion = useRef({ amount: norm, rotation: 0, last: -1 });
   const reducedMotion = usePrefersReducedMotion();
+  const palette = useTheme() === "dark" ? WHITE_VORTEX : ICE_VORTEX;
 
   const { ref, dragging, handlers } = useRotary({
     value,
@@ -51,10 +53,10 @@ export function ReverseOrb({ value, tailSeconds, onChange, onGestureStart, onGes
       else m.amount += (norm - m.amount) * (1 - Math.exp(-dt / 0.6)); // ~0.6 s ease at any frame rate
 
       m.rotation += dt * (0.42 - m.amount * 0.22); // radians per second
-      drawVortex(sizeCanvas(canvas, VORTEX, VORTEX), VORTEX, m.rotation, m.amount);
+      drawVortex(sizeCanvas(canvas, VORTEX, VORTEX), VORTEX, m.rotation, m.amount, palette);
     },
     !reducedMotion,
-    [norm],
+    [norm, palette],
   );
 
   // Scale: fine dots along the sweep, larger dots at each musical length.

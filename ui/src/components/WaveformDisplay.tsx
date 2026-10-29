@@ -15,7 +15,10 @@ import {
   WAVE_H,
   WAVE_W,
   xForFraction,
+  ICE_WAVE,
+  WHITE_WAVE,
 } from "./waveformRenderer";
+import { useTheme } from "../theme";
 
 type View = "raw" | "edit";
 
@@ -31,6 +34,7 @@ export function WaveformDisplay({ dropActive }: { dropActive: boolean }) {
   const state = useStore((s) => s.state);
   const playback = useStore((s) => s.playback);
   const reducedMotion = usePrefersReducedMotion();
+  const tint = useTheme() === "dark" ? WHITE_WAVE : ICE_WAVE;
 
   const atmosphereRef = useRef<HTMLCanvasElement>(null);
   const barsRef = useRef<HTMLCanvasElement>(null);
@@ -82,8 +86,8 @@ export function WaveformDisplay({ dropActive }: { dropActive: boolean }) {
       peaks,
       originalFraction: view === "edit" ? originalFraction : null,
       selection: view === "raw" ? selFractions : null,
-    });
-  }, [view, peaks, originalFraction, selFractions?.[0], selFractions?.[1], resizeTick]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, tint);
+  }, [view, peaks, originalFraction, selFractions?.[0], selFractions?.[1], resizeTick, tint]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Atmosphere (animated) and playhead.
   useAnimationFrame(
@@ -91,7 +95,7 @@ export function WaveformDisplay({ dropActive }: { dropActive: boolean }) {
       const atmo = atmosphereRef.current;
       const overlay = overlayRef.current;
       if (!atmo || !overlay) return;
-      drawAtmosphere(sizeCanvas(atmo, WAVE_W, WAVE_H), reducedMotion ? 0 : t, emphasis);
+      drawAtmosphere(sizeCanvas(atmo, WAVE_W, WAVE_H), reducedMotion ? 0 : t, emphasis, tint);
 
       const ctx = sizeCanvas(overlay, WAVE_W, WAVE_H);
       ctx.clearRect(0, 0, WAVE_W, WAVE_H);
@@ -113,20 +117,20 @@ export function WaveformDisplay({ dropActive }: { dropActive: boolean }) {
           live.lastSample += LIVE_STEP_MS;
           if (live.levels.length > LIVE_BARS) live.levels.shift();
         }
-        drawLiveWave(ctx, live.levels, (now - live.lastSample) / LIVE_STEP_MS, t);
+        drawLiveWave(ctx, live.levels, (now - live.lastSample) / LIVE_STEP_MS, t, tint);
         return;
       }
       live.active = false;
 
       if (view === "edit" && st.rendered) {
         const preview = pb.playing && pb.source === "edit";
-        drawPlayhead(ctx, preview ? Math.min(1, pb.position / st.rendered.seconds) : 0, preview);
+        drawPlayhead(ctx, preview ? Math.min(1, pb.position / st.rendered.seconds) : 0, preview, tint);
       } else if (view === "raw" && pb.playing && pb.source === "raw" && st.sourceSeconds > 0) {
-        drawPlayhead(ctx, Math.min(1, (st.selStart + pb.position) / st.sourceSeconds), true);
+        drawPlayhead(ctx, Math.min(1, (st.selStart + pb.position) / st.sourceSeconds), true, tint);
       }
     },
     true,
-    [view, emphasis, reducedMotion],
+    [view, emphasis, reducedMotion, tint],
   );
 
   // Collect the loudest input level between animation samples.
