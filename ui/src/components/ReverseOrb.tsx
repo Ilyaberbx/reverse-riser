@@ -22,7 +22,9 @@ export function ReverseOrb({ value, tailSeconds, onChange, onGestureStart, onGes
   const norm = normalise(value, 0, max);
   const angle = sweepAngle(norm);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const amountRef = useRef(norm);
+  // Motion state lives across frames: the swirl angle is integrated, never recomputed from the
+  // clock, so turning the knob changes how fast it turns without making it jump or race.
+  const motion = useRef({ amount: norm, rotation: 0, last: -1 });
   const reducedMotion = usePrefersReducedMotion();
 
   const { ref, dragging, handlers } = useRotary({
@@ -41,8 +43,15 @@ export function ReverseOrb({ value, tailSeconds, onChange, onGestureStart, onGes
     (t) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
-      amountRef.current += (norm - amountRef.current) * (reducedMotion ? 1 : 0.06);
-      drawVortex(sizeCanvas(canvas, VORTEX, VORTEX), VORTEX, t, amountRef.current);
+      const m = motion.current;
+      const dt = m.last < 0 ? 0 : Math.min(0.05, Math.max(0, t - m.last)); // cap gaps (hidden window, stalls)
+      m.last = t;
+
+      if (reducedMotion) m.amount = norm;
+      else m.amount += (norm - m.amount) * (1 - Math.exp(-dt / 0.6)); // ~0.6 s ease at any frame rate
+
+      m.rotation += dt * (0.42 - m.amount * 0.22); // radians per second
+      drawVortex(sizeCanvas(canvas, VORTEX, VORTEX), VORTEX, m.rotation, m.amount);
     },
     !reducedMotion,
     [norm],

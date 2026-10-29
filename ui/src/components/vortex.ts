@@ -1,13 +1,15 @@
 /**
     Canvas renderer for the fluid vortex inside the orb: logarithmic-spiral filaments drawn
-    additively over a deep radial gradient, slowly rotating. `amount` (0..1) tightens the
-    spiral and slows it down as the reverse length grows.
+    additively over a deep radial gradient. `rotation` is the accumulated swirl angle in radians:
+    the caller integrates it, so a change of speed never makes it jump. `amount` (0..1, eased by
+    the caller) follows the reverse length: short lengths open a wide eye with loose swirls,
+    long lengths close it to a narrow eye with the filaments drawn tight.
 */
 
 interface Filament {
   angle: number;
   startR: number;
-  endR: number;
+  endU: number;     // 0..1: where inside the eye opening this filament ends
   twist: number;
   width: number;
   alpha: number;
@@ -24,7 +26,7 @@ function makeFilaments(count: number): Filament[] {
   return Array.from({ length: count }, () => ({
     angle: rnd() * Math.PI * 2,
     startR: 0.55 + rnd() * 0.45,
-    endR: 0.06 + rnd() * 0.22,
+    endU: rnd(),
     twist: 0.8 + rnd() * 0.9,
     width: 0.35 + rnd() * rnd() * 2.2,
     alpha: 0.12 + rnd() * 0.55,
@@ -35,7 +37,7 @@ function makeFilaments(count: number): Filament[] {
 const FILAMENTS = makeFilaments(110);
 const STEPS = 46;
 
-export function drawVortex(ctx: CanvasRenderingContext2D, size: number, time: number, amount: number) {
+export function drawVortex(ctx: CanvasRenderingContext2D, size: number, rotation: number, amount: number) {
   const R = size / 2;
   ctx.save();
   ctx.clearRect(0, 0, size, size);
@@ -66,11 +68,11 @@ export function drawVortex(ctx: CanvasRenderingContext2D, size: number, time: nu
   ctx.lineCap = "round";
 
   const twistScale = 2.0 + amount * 1.8;
-  const rotation = time * (0.42 - amount * 0.22);
+  const eye = 0.36 + (0.08 - 0.36) * amount;   // radius of the opening, as a fraction of R
 
   for (const f of FILAMENTS) {
     const r0 = f.startR * R;
-    const r1 = f.endR * R;
+    const r1 = R * eye * (0.7 + f.endU * 1.1);
     ctx.globalAlpha = f.alpha;
     ctx.lineWidth = f.width;
     ctx.beginPath();
@@ -91,14 +93,28 @@ export function drawVortex(ctx: CanvasRenderingContext2D, size: number, time: nu
   ctx.globalCompositeOperation = "source-over";
 
   // Central depth.
-  const hole = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.42);
-  hole.addColorStop(0, "rgba(0, 4, 12, 0.95)");
-  hole.addColorStop(0.45, "rgba(1, 10, 28, 0.6)");
+  const holeR = R * eye * 1.45;
+  const hole = ctx.createRadialGradient(0, 0, 0, 0, 0, holeR);
+  hole.addColorStop(0, "rgba(0, 4, 12, 0.97)");
+  hole.addColorStop(0.5, "rgba(1, 10, 28, 0.62)");
   hole.addColorStop(1, "rgba(1, 10, 28, 0)");
   ctx.fillStyle = hole;
   ctx.beginPath();
-  ctx.arc(0, 0, R * 0.42, 0, Math.PI * 2);
+  ctx.arc(0, 0, holeR, 0, Math.PI * 2);
   ctx.fill();
+
+  // A faint icy rim marks the edge of the opening, so its narrowing and widening reads clearly.
+  const rimIn = R * eye * 0.8, rimOut = R * eye * 1.3;
+  const eyeRim = ctx.createRadialGradient(0, 0, rimIn, 0, 0, rimOut);
+  eyeRim.addColorStop(0, "rgba(167, 240, 255, 0)");
+  eyeRim.addColorStop(0.5, "rgba(167, 240, 255, 0.16)");
+  eyeRim.addColorStop(1, "rgba(167, 240, 255, 0)");
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = eyeRim;
+  ctx.beginPath();
+  ctx.arc(0, 0, rimOut, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalCompositeOperation = "source-over";
 
   // Rim shadow for a concave feel.
   const rim = ctx.createRadialGradient(0, 0, R * 0.78, 0, 0, R);
