@@ -210,7 +210,9 @@ void PluginEditor::RiserView::paint (juce::Graphics& g)
 
     // wordmark: light + extra bold, widely tracked
     const auto light = Theme::font (Theme::Type::wordmarkLight, u), bold = Theme::font (Theme::Type::wordmarkBold, u);
-    const auto origin = bounds.getTopLeft().translated (16.0f * u, 12.0f * u);
+    const auto logoArea = juce::Rectangle<float> (20.0f * u, 20.0f * u).withPosition (bounds.getTopLeft().translated (16.0f * u, 12.0f * u));
+    Theme::drawTinted (g, Theme::images().logoMark, logoArea, p.textPrimary);
+    const auto origin = logoArea.getTopRight().translated (8.0f * u, 0.0f);
     const auto lightWidth = juce::GlyphArrangement::getStringWidth (light, "REVERSE ");
     g.setColour (p.textMuted);
     g.setFont (light);
@@ -320,7 +322,6 @@ class PluginEditor::FxPanel : public juce::Component
 public:
     FxPanel (juce::AudioProcessorValueTreeState& apvts, const std::vector<const char*>& ids, float scale) : u (scale)
     {
-        const auto& p = Theme::palette();
         for (const auto* id : ids)
         {
             auto* param = apvts.getParameter (id);
@@ -334,10 +335,8 @@ public:
                 addAndMakeVisible (*row.combo);
                 continue;
             }
-            row.slider = std::make_unique<juce::Slider> (juce::Slider::LinearHorizontal, juce::Slider::NoTextBox);
-            row.slider->setColour (juce::Slider::trackColourId, Theme::accent);
-            row.slider->setColour (juce::Slider::backgroundColourId, p.base);
-            row.slider->setColour (juce::Slider::thumbColourId, p.faceTop);
+            // a small metal-capped knob with its name and value beside it
+            row.slider = std::make_unique<juce::Slider> (juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::NoTextBox);
             row.slider->setTitle (param->getName (32));
             row.attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, id, *row.slider);
             // "Chorus Mix" -> "MIX"
@@ -361,8 +360,9 @@ public:
                 row.combo->setBounds (snap (cell.withSizeKeepingCentre (cell.getWidth(), 34.0f * u)));
                 continue;
             }
-            row.caption->setBounds (snap (cell.removeFromTop (22.0f * u)));
-            row.slider->setBounds (snap (cell.reduced (0.0f, 2.0f * u)));
+            const auto knob = cell.removeFromLeft (50.0f * u);
+            row.slider->setBounds (snap (knob.withSizeKeepingCentre (46.0f * u, 46.0f * u)));
+            row.caption->setBounds (snap (cell.withTrimmedLeft (6.0f * u).withSizeKeepingCentre (cell.getWidth() - 6.0f * u, 22.0f * u)));
         }
     }
 
@@ -519,8 +519,14 @@ void PluginEditor::paint (juce::Graphics& g)
     const auto& p = Theme::palette();
     const auto bounds = getLocalBounds().toFloat();
 
-    // base, lit softly from the top
+    // base, the frosted surface at low alpha, lit softly from the top
     g.fillAll (p.base);
+    if (const auto& glass = p.dark ? Theme::images().glassDark : Theme::images().glassLight; glass.isValid())
+    {
+        juce::Graphics::ScopedSaveState state (g);
+        g.setOpacity (p.dark ? 0.22f : 0.18f);
+        g.drawImage (glass, bounds, juce::RectanglePlacement::fillDestination);
+    }
     g.setGradientFill ({ p.faceTop.withAlpha (p.dark ? 0.25f : 0.6f), { bounds.getCentreX(), 0.0f },
         p.faceTop.withAlpha (0.0f), { bounds.getCentreX(), bounds.getHeight() * 0.7f }, true });
     g.fillRect (bounds);

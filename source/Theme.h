@@ -22,13 +22,14 @@ namespace Theme
     bool isDark();
     void setDark (bool shouldBeDark);
 
-    // glow hues for the hero's lit ticks, low -> high; with the accent, the only saturated colours in the UI
+    // glow hues for the hero's lit ticks, low -> high: ice cyan into electric blue; with the accent, the only
+    // saturated colours in the UI
     inline const std::array<juce::Colour, 8> glow {
-        juce::Colour (0xff5ee7df), juce::Colour (0xff7fb8ff), juce::Colour (0xff8c7cff), juce::Colour (0xffc77dff),
-        juce::Colour (0xffff7eb3), juce::Colour (0xffff9a8b), juce::Colour (0xffffc371), juce::Colour (0xffffe29a)
+        juce::Colour (0xff7df3ff), juce::Colour (0xff5fdcff), juce::Colour (0xff46c2ff), juce::Colour (0xff35a7ff),
+        juce::Colour (0xff2f8cfb), juce::Colour (0xff2f7cf6), juce::Colour (0xff4f8ff8), juce::Colour (0xff8ab8ff)
     };
     // single accent for "on" states
-    inline const juce::Colour accent { 0xff8c7cff };
+    inline const juce::Colour accent { 0xff2f7cf6 };
 
     juce::ColourGradient glowGradient (juce::Point<float> from, juce::Point<float> to);
     juce::Colour glowAt (float proportion);
@@ -53,8 +54,18 @@ namespace Theme
     melatonin::DropShadow raised (const Palette& p, float distance, float blur);
     melatonin::InnerShadow pressed (const Palette& p, float distance, float blur);
 
+    // generated surfaces (assets/images, embedded as BinaryData): the vortex in the hero, the metal cap of small
+    // knobs, the logo mark, and the frosted texture under the panel. Everything else stays vector. See DESIGN.md.
+    struct Images
+    {
+        juce::Image heroVortex, knobCap, logoMark, glassLight, glassDark;
+    };
+    const Images& images();
+
     // shared drawing helpers
     void fillFace (juce::Graphics& g, const juce::Path& shape, juce::Rectangle<float> bounds, const Palette& p);
+    // draws an image's alpha mask in one colour, e.g. the logo in the text colour
+    void drawTinted (juce::Graphics& g, const juce::Image& image, juce::Rectangle<float> area, juce::Colour colour);
     void drawCornerGrips (juce::Graphics& g, juce::Rectangle<float> area, float u);
     void drawPowerIcon (juce::Graphics& g, juce::Rectangle<float> area, juce::Colour colour, float thickness);
 }

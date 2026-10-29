@@ -13,9 +13,9 @@ namespace Theme
 
     const Palette& dark()
     {
-        static const Palette p { juce::Colour (0xff1f2127), juce::Colour (0xff2b2e36), juce::Colour (0xff1b1d22),
-            juce::Colour (0xff14161a), juce::Colour (0x8c000000), juce::Colour (0x14ffffff),
-            juce::Colour (0xffe7e9ee), juce::Colour (0xff9198a8), juce::Colour (0xff3b3f49), true };
+        static const Palette p { juce::Colour (0xff161b26), juce::Colour (0xff232b3a), juce::Colour (0xff121722),
+            juce::Colour (0xff0d111a), juce::Colour (0x8c000000), juce::Colour (0x16ffffff),
+            juce::Colour (0xffe7e9ee), juce::Colour (0xff9198a8), juce::Colour (0xff363d4d), true };
         return p;
     }
 
@@ -126,10 +126,33 @@ namespace Theme
         return { { p.shadowDark, b, { d, d } }, { p.shadowLight, b, { -d, -d } } };
     }
 
+    const Images& images()
+    {
+        static const Images i {
+            juce::ImageCache::getFromMemory (BinaryData::hero_vortex_png, BinaryData::hero_vortex_pngSize),
+            juce::ImageCache::getFromMemory (BinaryData::knob_cap_png, BinaryData::knob_cap_pngSize),
+            juce::ImageCache::getFromMemory (BinaryData::logo_mark_png, BinaryData::logo_mark_pngSize),
+            juce::ImageCache::getFromMemory (BinaryData::glass_light_png, BinaryData::glass_light_pngSize),
+            juce::ImageCache::getFromMemory (BinaryData::glass_dark_png, BinaryData::glass_dark_pngSize),
+        };
+        return i;
+    }
+
     void fillFace (juce::Graphics& g, const juce::Path& shape, juce::Rectangle<float> bounds, const Palette& p)
     {
         g.setGradientFill ({ p.faceTop, bounds.getTopLeft(), p.faceBottom, bounds.getBottomRight(), false });
         g.fillPath (shape);
+    }
+
+    void drawTinted (juce::Graphics& g, const juce::Image& image, juce::Rectangle<float> area, juce::Colour colour)
+    {
+        if (! image.isValid())
+            return;
+        const auto fitted = juce::RectanglePlacement (juce::RectanglePlacement::centred)
+                                .getTransformToFit (image.getBounds().toFloat(), area);
+        juce::Graphics::ScopedSaveState state (g);
+        g.setColour (colour);
+        g.drawImageTransformed (image, fitted, true);
     }
 
     void drawCornerGrips (juce::Graphics& g, juce::Rectangle<float> area, float u)
@@ -269,6 +292,16 @@ void NeumorphicLookAndFeel::drawHeroKnob (juce::Graphics& g, juce::Rectangle<flo
     disc.addEllipse (discBounds);
     heroDisc.render (g, disc);
     Theme::fillFace (g, disc, discBounds, p);
+    // the face: the generated vortex, clipped to the disc, turning with the value
+    if (const auto& vortex = Theme::images().heroVortex; vortex.isValid())
+    {
+        juce::Graphics::ScopedSaveState state (g);
+        g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
+        g.reduceClipRegion (disc);
+        const auto face = discBounds.reduced (1.5f * u);
+        const auto scale = face.getWidth() / (float) vortex.getWidth();
+        g.drawImageTransformed (vortex, juce::AffineTransform::scale (scale).translated (face.getX(), face.getY()).rotated (angle, centre.x, centre.y));
+    }
     g.setColour (p.shadowLight.withMultipliedAlpha (p.dark ? 1.6f : 0.7f));
     g.drawEllipse (discBounds.reduced (0.75f * u), 1.0f * u);
     if (hot)
@@ -280,9 +313,9 @@ void NeumorphicLookAndFeel::drawHeroKnob (juce::Graphics& g, juce::Rectangle<flo
     // pointer line
     const auto from = centre.getPointOnCircumference (discRadius * 0.5f, angle);
     const auto to = centre.getPointOnCircumference (discRadius * 0.82f, angle);
-    g.setColour (Theme::glowAt (sliderPos).withAlpha (0.35f));
+    g.setColour (Theme::glowAt (sliderPos).withAlpha (0.45f));
     g.drawLine ({ from, to }, 7.0f * u);
-    g.setColour (p.textPrimary);
+    g.setColour (juce::Colour (0xfff4f7ff));
     g.drawLine ({ from, to }, 3.0f * u);
 }
 
@@ -318,6 +351,14 @@ void NeumorphicLookAndFeel::drawSmallKnob (juce::Graphics& g, juce::Rectangle<fl
     disc.addEllipse (discBounds);
     knobDisc.render (g, disc);
     Theme::fillFace (g, disc, discBounds, p);
+    // the cap: the generated brushed metal, clipped to the disc
+    if (const auto& cap = Theme::images().knobCap; cap.isValid())
+    {
+        juce::Graphics::ScopedSaveState state (g);
+        g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
+        g.reduceClipRegion (disc);
+        g.drawImage (cap, discBounds, juce::RectanglePlacement::stretchToFit);
+    }
     if (hot)
     {
         g.setColour (Theme::accent.withAlpha (0.35f));

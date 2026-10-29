@@ -80,5 +80,23 @@ Raised = `shadowDark` at (+d, +d) and `shadowLight` at (−d, −d). Pressed = t
 - **Do:** keep REVERSE the biggest control, whatever you add.
 - **Do:** show state through depth. Raised means available; pressed means selected, active or a place where things sit.
 - **Don't:** use gradient text, coloured borders or saturated fills, and don't add a second accent.
-- **Don't:** use glass or blur as decoration.
+- **Don't:** use glass or blur as decoration. The one exception is the frosted surface texture under the panel, drawn once at low alpha (see Imagery).
 - **Don't:** use a fixed pixel size. Everything goes through `u`, and new controls get added to the layout test.
+
+## Imagery
+
+Five generated bitmaps live in `assets/images/` and are embedded as `BinaryData` (every file in `assets/` is). `Theme::images()` loads them once; a missing or broken image draws nothing rather than crashing.
+
+| File | Used by | Role |
+|---|---|---|
+| `hero_vortex.png` | `drawHeroKnob` | The face of the REVERSE disc: a blue plasma vortex, clipped to the disc and rotated with the value. |
+| `knob_cap.png` | `drawSmallKnob` | Brushed-metal cap on small rotary knobs (alpha cut-out). |
+| `logo_mark.png` | `RiserView::paint` | The vortex mark left of the wordmark, drawn as an alpha mask in `textPrimary`; also the app icon. |
+| `glass_light.png`, `glass_dark.png` | `PluginEditor::paint` | Frosted surface under the whole panel at ~20% alpha, one per palette. |
+
+Rules for images:
+
+- **Surfaces only.** No UI chrome, text, icons, pointers, rims or shadows inside a bitmap; those stay vector so they follow `u`, the palette and the value.
+- **Square for anything drawn into a circle**, so the clip never shows a corner.
+- **At least 1024 px** on the short side, since `u` reaches 2.2.
+- **Colour comes from the image only where the rules already allow it:** the vortex is the hero's colour, like its lit ticks. The glass textures are near-monochrome.

@@ -1,5 +1,6 @@
 #include "helpers/test_helpers.h"
 #include <PluginProcessor.h>
+#include <Theme.h>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 
@@ -39,3 +40,23 @@ TEST_CASE ("IPP version", "[ipp]")
     #endif
 }
 #endif
+
+TEST_CASE ("Generated images are embedded", "[assets]")
+{
+    const auto& i = Theme::images();
+    for (const auto* image : { &i.heroVortex, &i.knobCap, &i.logoMark, &i.glassLight, &i.glassDark })
+        CHECK (image->isValid());
+
+    SECTION ("surfaces drawn into circles are square")
+    {
+        CHECK (i.heroVortex.getWidth() == i.heroVortex.getHeight());
+        CHECK (i.knobCap.getWidth() == i.knobCap.getHeight());
+        CHECK (i.logoMark.getWidth() == i.logoMark.getHeight());
+    }
+
+    SECTION ("cut-outs keep their alpha")
+    {
+        CHECK (i.knobCap.hasAlphaChannel());
+        CHECK (i.logoMark.hasAlphaChannel());
+    }
+}
