@@ -20,14 +20,16 @@ namespace
         const juce::String tremoloTiming   { "tremoloTiming" };
         const juce::String damping         { "damping" };
         const juce::String width           { "width" };
-        const juce::String wet             { "wet" };
+        const juce::String level           { "level" };
+        const juce::String lowCut          { "lowCut" };
+        const juce::String lock            { "lock" };
         const juce::String dry             { "dry" };
     }
 
     const juce::StringArray allParameterIds { IDs::reverse, IDs::fade, IDs::size,
                                               IDs::phoneOn, IDs::chorusOn, IDs::tremoloOn, IDs::includeOriginal, IDs::phoneMix, IDs::phoneTone,
                                               IDs::chorusMix, IDs::chorusRate, IDs::tremoloMix, IDs::tremoloTiming,
-                                              IDs::damping, IDs::width, IDs::wet, IDs::dry };
+                                              IDs::level, IDs::lowCut, IDs::damping, IDs::width, IDs::dry };
 
     constexpr double reverseBars[] = { 0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0 };
     constexpr int defaultReverseIndex = 3;   // 1 BAR
@@ -210,7 +212,8 @@ const juce::StringArray& AtmosRiserProcessor::uiParameterIds()
 {
     static const juce::StringArray ids { IDs::reverse, IDs::fade, IDs::size,
                                          IDs::phoneOn, IDs::chorusOn, IDs::tremoloOn, IDs::includeOriginal, IDs::phoneMix, IDs::phoneTone,
-                                         IDs::chorusMix, IDs::chorusRate, IDs::tremoloMix, IDs::tremoloTiming };
+                                         IDs::chorusMix, IDs::chorusRate, IDs::tremoloMix, IDs::tremoloTiming,
+                                         IDs::level, IDs::lowCut, IDs::lock };
     return ids;
 }
 
@@ -290,7 +293,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout AtmosRiserProcessor::createP
     params.push_back (std::make_unique<Choice> (juce::ParameterID { IDs::tremoloTiming, 1 }, "Tremolo Timing", tremoloTimingNames(), 1));
     params.push_back (std::make_unique<Float> (juce::ParameterID { IDs::damping, 1 },   "Damping",   Range (0.0f, 1.0f, 0.001f), 0.4f));
     params.push_back (std::make_unique<Float> (juce::ParameterID { IDs::width, 1 },     "Width",     Range (0.0f, 1.0f, 0.001f), 1.0f));
-    params.push_back (std::make_unique<Float> (juce::ParameterID { IDs::wet, 1 },       "Wet",       Range (0.0f, 1.5f, 0.01f), 1.0f));
+    params.push_back (std::make_unique<Float> (juce::ParameterID { IDs::level, 1 },     "Level",     Range (-24.0f, 6.0f, 0.1f), 0.0f, Attrs().withLabel ("dB")));
+    params.push_back (std::make_unique<Float> (juce::ParameterID { IDs::lowCut, 1 },    "Low Cut",   Range (20.0f, 1000.0f, 1.0f, 0.35f), 20.0f, Attrs().withLabel ("Hz")));
+    params.push_back (std::make_unique<Bool> (juce::ParameterID { IDs::lock, 1 }, "Lock", false));
     params.push_back (std::make_unique<Float> (juce::ParameterID { IDs::dry, 1 },       "Dry",       Range (0.0f, 1.5f, 0.01f), 1.0f));
 
     return { params.begin(), params.end() };
@@ -377,7 +382,19 @@ void AtmosRiserProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     if (! transportPlaying)
         waitForTransportStop = false;
 
-    if (capture == captureArmed && capacity > 0 && hasTransport && transportPlaying && ! waitForTransportStop)
+    // Exports and bounces run the transport too: never capture while rendering offline.
+    // The lock keeps the current take no matter what the DAW plays.
+    const bool locked = apvts.getRawParameterValue (IDs::lock)->load() > 0.5f;
+
+    if (capture == captureRecording && (locked || isNonRealtime()))
+    {
+        discardTake = true;
+        captureState = captureFinished;
+        capture = captureFinished;
+    }
+
+    if (capture == captureArmed && capacity > 0 && hasTransport && transportPlaying && ! waitForTransportStop
+        && ! locked && ! isNonRealtime())
     {
         captureWritePos = 0;
         captureRecorded = 0;
@@ -715,6 +732,14 @@ void AtmosRiserProcessor::rebuildRawPeaks()
 //==============================================================================
 void AtmosRiserProcessor::clearRecording()
 {
+    // Reset means "capture again", so it also releases the lock.
+    if (auto* lockParam = apvts.getParameter (IDs::lock); lockParam != nullptr && lockParam->getValue() > 0.5f)
+    {
+        lockParam->beginChangeGesture();
+        lockParam->setValueNotifyingHost (0.0f);
+        lockParam->endChangeGesture();
+    }
+
     // A take still being recorded is thrown away when the audio thread closes it.
     if (captureState.load() == captureRecording)
     {
@@ -795,9 +820,19 @@ void AtmosRiserProcessor::finalizeCapture()
     takeHasPpq = captureHasPpq;
     takeStartPpq = captureStartPpq + (double) dropped / captureRate * hostBpm.load() / 60.0;
 
-    const auto file = getCaptureDirectory().getChildFile ("take_" + juce::Time::getCurrentTime().formatted ("%Y%m%d_%H%M%S") + ".wav")
-                                           .getNonexistentSibling();
+    // One file per take, named uniquely so duplicated tracks never share it. The previous take
+    // this instance wrote in this session is deleted, so playback after playback doesn't fill the
+    // disk; takes restored from a saved project are left alone (another save may still use them).
+    const auto file = getCaptureDirectory().getChildFile ("take_" + juce::Uuid().toString() + ".wav");
     const bool saved = writeWav (file, take, captureRate);
+
+    if (saved)
+    {
+        if (lastSessionTake != juce::File() && lastSessionTake != file)
+            lastSessionTake.deleteFile();
+
+        lastSessionTake = file;
+    }
     const double seconds = count / captureRate;
 
     captureState = captureArmed;   // keep listening: the next playback replaces this take
@@ -1134,7 +1169,8 @@ ReverseReverbSettings AtmosRiserProcessor::currentSettings() const
     s.fade             = raw (IDs::fade) / 100.0f;
     s.damping          = raw (IDs::damping);
     s.width            = raw (IDs::width);
-    s.wetGain          = raw (IDs::wet);
+    s.wetGain          = juce::Decibels::decibelsToGain (raw (IDs::level), -100.0f);
+    s.lowCutHz         = raw (IDs::lowCut);
     s.dryGain          = raw (IDs::dry);
     s.includeOriginal  = raw (IDs::includeOriginal) > 0.5f;
     s.phoneOn          = raw (IDs::phoneOn) > 0.5f;
@@ -1202,6 +1238,21 @@ void AtmosRiserProcessor::renderNow()
 }
 
 //==============================================================================
+BarAlignment AtmosRiserProcessor::getExportAlignment() const
+{
+    auto clip = renderedForUi;
+
+    if (clip == nullptr || sourceKind != SourceKind::capture || ! takeHasPpq)
+        return {};
+
+    const double bpm = juce::jlimit (20.0, 400.0, hostBpm.load());
+    const double beatsPerBar = timeSigNumerator.load() * 4.0 / (double) timeSigDenominator.load();
+    const double clipStartSeconds = selectionStart - clip->originalStartSample / clip->sampleRate;
+    const double clipStartPpq = takeStartPpq + clipStartSeconds * bpm / 60.0;
+
+    return alignToBar (clipStartPpq, bpm, beatsPerBar, clip->sampleRate);
+}
+
 juce::String AtmosRiserProcessor::getDefaultExportName() const
 {
     juce::String base;
@@ -1214,14 +1265,9 @@ juce::String AtmosRiserProcessor::getDefaultExportName() const
         case SourceKind::none:    base = "clip"; break;
     }
 
-    // Name captured risers after the bar they start on, so they are easy to place.
-    if (auto clip = renderedForUi; clip != nullptr && sourceKind == SourceKind::capture)
-    {
-        const auto where = describeTimelinePosition (selectionStart - clip->originalStartSample / clip->sampleRate);
-
-        if (where.startsWith ("bar "))
-            base << "_" << where.replaceCharacter (' ', '-').replaceCharacter ('.', '-');
-    }
+    // Captured risers say which bar to drop them on (their first sample sits on that bar line).
+    if (const auto align = getExportAlignment(); align.valid)
+        base << "_drop-on-bar-" << align.bar;
 
     return base + "_atmosriser.wav";
 }
@@ -1242,7 +1288,16 @@ bool AtmosRiserProcessor::exportRenderedToFile (const juce::File& file, juce::St
         return false;
     }
 
-    if (! writeWav (file, clip->buffer, clip->sampleRate))
+    // Pad the front with silence so the clip starts exactly on a bar line.
+    const auto align = getExportAlignment();
+    const int pad = align.valid ? juce::jmax (0, align.padSamples) : 0;
+    juce::AudioBuffer<float> padded (clip->buffer.getNumChannels(), clip->buffer.getNumSamples() + pad);
+    padded.clear();
+
+    for (int ch = 0; ch < padded.getNumChannels(); ++ch)
+        padded.copyFrom (ch, pad, clip->buffer, ch, 0, clip->buffer.getNumSamples());
+
+    if (! writeWav (file, padded, clip->sampleRate))
     {
         errorMessage = "Could not write " + file.getFullPathName();
         return false;

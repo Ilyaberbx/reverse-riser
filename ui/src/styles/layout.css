@@ -112,20 +112,22 @@ body {
   justify-content: center;
 }
 
-/* Size and Fade sit either side of the orb, centred on its height (orb centre is 174 px down). */
-.side-knob {
+/* Two small knobs stacked on each side of the orb, centred on its height (orb centre: 174 px). */
+.side-stack {
   position: absolute;
-  top: 116px;
+  top: 56px;
   width: 132px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
 }
 
-.side-knob--left {
+.side-stack--left {
   left: 86px;
 }
 
-.side-knob--right {
+.side-stack--right {
   right: 86px;
 }
 

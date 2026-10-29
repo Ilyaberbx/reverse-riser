@@ -7,7 +7,7 @@ import { ReverseOrb } from "./components/ReverseOrb";
 import { SideKnob } from "./components/SideKnob";
 import { ToastHost } from "./components/ToastHost";
 import { WaveformDisplay } from "./components/WaveformDisplay";
-import { FADE, SIZE } from "./params";
+import { FADE, LEVEL, LOW_CUT, SIZE } from "./params";
 import { actions, showToast, useStore } from "./store";
 
 export const DESIGN_W = 860;
@@ -121,9 +121,15 @@ export default function App() {
             <WaveformDisplay dropActive={dropActive} />
           </div>
           <div className="panel__main">
-            <SideKnob side="left" param={SIZE} />
+            <div className="side-stack side-stack--left">
+              <SideKnob param={SIZE} />
+              <SideKnob param={LOW_CUT} />
+            </div>
             <CenterOrb />
-            <SideKnob side="right" param={FADE} />
+            <div className="side-stack side-stack--right">
+              <SideKnob param={FADE} />
+              <SideKnob param={LEVEL} />
+            </div>
           </div>
           <div className="panel__footer">
             <EffectModeSelector />

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import { backend } from "../bridge";
 import { actions, getStore, showToast, useStore } from "../store";
-import { LoopIcon, PlayIcon, ResetIcon, StopIcon } from "./icons";
+import { LockIcon, LoopIcon, PlayIcon, ResetIcon, StopIcon } from "./icons";
 import { PlaybackButton, SegmentedControl } from "./IconButton";
 import { sizeCanvas, useAnimationFrame, usePrefersReducedMotion } from "./useAnimationFrame";
 import {
@@ -229,9 +229,10 @@ export function WaveformDisplay({ dropActive }: { dropActive: boolean }) {
   }, [view]);
 
   const recording = playback.recording;
+  const locked = useStore((st) => st.params.lock > 0.5);
 
   return (
-    <section className={`waveform ${dropActive ? "is-drop-target" : ""} ${recording ? "is-recording" : ""}`} aria-label="Waveform">
+    <section className={`waveform ${dropActive ? "is-drop-target" : ""} ${recording ? "is-recording" : ""} ${locked ? "is-locked" : ""}`} aria-label="Waveform">
       <canvas ref={atmosphereRef} className="waveform__layer" style={{ width: WAVE_W, height: WAVE_H }} aria-hidden="true" />
       <canvas ref={barsRef} className="waveform__layer waveform__bars" style={{ width: WAVE_W, height: WAVE_H }} aria-hidden="true" />
       <canvas
@@ -250,20 +251,40 @@ export function WaveformDisplay({ dropActive }: { dropActive: boolean }) {
         <div className="waveform__drop" aria-hidden="true" />
       )}
 
-      <button
-        type="button"
-        className="waveform__reset"
-        disabled={!state.hasSource && !recording}
-        onClick={() => backend.reset()}
-        title={
-          state.isStandalone
-            ? "Clear the audio inside the plugin"
-            : "Clear the recording inside the plugin. The next playback in your DAW captures the track again."
-        }
-      >
-        <ResetIcon size={14} />
-        <span>RESET</span>
-      </button>
+      <div className="waveform__top">
+        <button
+          type="button"
+          className={`waveform__lock ${locked ? "is-on" : ""}`}
+          aria-pressed={locked}
+          onClick={() => {
+            actions.beginGesture("lock");
+            actions.setParam("lock", locked ? 0 : 1);
+            actions.endGesture("lock");
+          }}
+          title={
+            locked
+              ? "Locked: playing the DAW keeps this take. Click to let playback capture again."
+              : "Lock this take so playing the DAW doesn't replace it"
+          }
+        >
+          <LockIcon locked={locked} size={14} />
+          <span>LOCK</span>
+        </button>
+        <button
+          type="button"
+          className="waveform__reset"
+          disabled={!state.hasSource && !recording}
+          onClick={() => backend.reset()}
+          title={
+            state.isStandalone
+              ? "Clear the audio inside the plugin"
+              : "Clear the recording inside the plugin and unlock. The next playback captures the track again."
+          }
+        >
+          <ResetIcon size={14} />
+          <span>RESET</span>
+        </button>
+      </div>
 
       <div className="waveform__transport">
         <PlaybackButton

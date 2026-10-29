@@ -9,6 +9,8 @@ export interface ContinuousParam {
   step: number;
   defaultValue: number;
   format: (v: number) => string;
+  /** Knob travel is logarithmic (frequencies). */
+  log?: boolean;
 }
 
 const percent = (v: number) => `${Math.round(v)} %`;
@@ -57,6 +59,18 @@ export const TREMOLO_TIMING: ContinuousParam = {
   format: (v) => TREMOLO_TIMINGS[Math.round(v)] ?? "1/8",
 };
 
+/** Output level of the swell. */
+export const LEVEL: ContinuousParam = {
+  id: "level", label: "LEVEL", min: -24, max: 6, step: 0.1, defaultValue: 0,
+  format: (v) => `${v > 0.05 ? "+" : ""}${v.toFixed(1)} dB`,
+};
+
+/** High-pass on the swell; 20 Hz means off. */
+export const LOW_CUT: ContinuousParam = {
+  id: "lowCut", label: "LOW CUT", min: 20, max: 1000, step: 1, defaultValue: 20, log: true,
+  format: (v) => (v <= 20.5 ? "Off" : `${Math.round(v)} Hz`),
+};
+
 /** Musical lengths of the swell; the orb steps through these. */
 export const REVERSE_CHOICES = ["1/8 BAR", "1/4 BAR", "1/2 BAR", "1 BAR", "2 BARS", "4 BARS", "8 BARS"];
 export const REVERSE_BARS = [0.125, 0.25, 0.5, 1, 2, 4, 8];
@@ -83,6 +97,9 @@ export const DEFAULT_PARAMS: Params = {
   chorusRate: CHORUS_RATE.defaultValue,
   tremoloMix: TREMOLO_MIX.defaultValue,
   tremoloTiming: TREMOLO_TIMING.defaultValue,
+  level: 0,
+  lowCut: 20,
+  lock: 0,
 };
 
 export function formatTime(seconds: number): string {

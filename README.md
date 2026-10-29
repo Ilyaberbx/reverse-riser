@@ -16,12 +16,18 @@ result onto a track as a WAV, or drop any audio file into the plugin instead.
 5. Drag the EDIT waveform onto a track. The info line shows the bar where the swell starts
    and the file name includes it.
 
-**Every DAW playback captures again and replaces the take**, so play the DAW only when you
-want a new take; use Listen / Loop to work with the one you have. A playback where the track
-is silent keeps the previous take. **RESET** clears the recording inside the plugin.
+**Every DAW playback captures again and replaces the take.** To keep the one you have, click
+**LOCK** (top right of the waveform): playback then leaves the take alone. Exports and bounces never
+capture. A playback where the track is silent keeps the previous take. **RESET** clears the
+recording inside the plugin and releases the lock.
+
+Dragged and exported clips start exactly on a bar line (padded with silence), and the file name
+says which bar to drop them on, e.g. `track_drop-on-bar-16_atmosriser.wav`. With grid snapping on,
+the swell lands sample-accurately in front of the phrase.
 
 Adjust the phrase in **RAW** view (drag to select, drag the handles). Takes are saved in
-`%APPDATA%\AtmosRiser\Captures`, so reopening the project restores the last one.
+`%APPDATA%\AtmosRiser\Captures` (one file per instance; older takes from the same session are
+deleted), so reopening the project restores the last one.
 
 Automatic sibilance detection is always on. It finds "s"/"sh" sounds in the selection and turns
 their highs down by about 18 dB in the signal that feeds the reverb, so they don't echo
@@ -87,7 +93,10 @@ rescanning plugins in your DAW.
 | **RESET** | Clears the captured or loaded audio. The next DAW playback captures the track again. Knob settings are kept. |
 | **Phone / Chorus / Tremolo** | Independent on/off switches for the swell; any combination can be on, and an effect that is on glows. Hover one for its settings: Phone has Mix and Tone, Chorus has Mix and Rate, Tremolo has Mix and Timing (1/4 to 1/32, triplets) locked to the tempo. |
 | **Size** (left of the orb) | Room size of the reverb, 10–150 %: small and tight to a long wash. |
+| **Low Cut** (left, below Size) | High-pass on the swell, Off to 1 kHz, to keep it from muddying the mix. |
 | **Fade** (right of the orb) | How the swell starts: 0 % begins with the reverb already audible, 100 % rises smoothly from silence. |
+| **Level** (right, below Fade) | Output level of the swell, -24 to +6 dB. |
+| **LOCK** | Keeps the current take when the DAW plays. |
 | **Reverse orb** | Musical length of the swell: 1/8 bar to 8 bars, following the host tempo and time signature (120 BPM in the standalone app). |
 | Presets | Seven factory presets. **Save** stores your own in `%APPDATA%\AtmosRiser\Presets`. |
 | Menu | Load audio, Export WAV, open the exports folder, and **Include original after the swell** (off by default: the clip is the swell alone and ends where the phrase begins). |

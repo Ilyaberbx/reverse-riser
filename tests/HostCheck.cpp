@@ -10,6 +10,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_audio_formats/juce_audio_formats.h>
 #include "../Source/ReverseReverbRenderer.h"
+#include "../Source/BarAlignment.h"
 
 namespace
 {
@@ -110,6 +111,22 @@ int main (int argc, char** argv)
         check (coversS, "finds the 's' at the start of the phrase");
         check (! coversVowel, "leaves the vowel alone");
     }
+
+    //-- Bar alignment of exported clips ------------------------------------------------------
+    std::cout << "Bar alignment" << std::endl;
+    {
+        // 120 BPM, 4/4: a clip starting at quarter note 33.5 is 1.5 beats (0.75 s) into bar 9.
+        const auto a = alignToBar (33.5, 120.0, 4.0, 48000.0);
+        const auto b = alignToBar (32.0, 120.0, 4.0, 48000.0);
+        std::cout << "    ppq 33.5 -> bar " << a.bar << ", pad " << a.padSamples << " samples; ppq 32 -> bar "
+                  << b.bar << ", pad " << b.padSamples << std::endl;
+        check (a.valid && a.bar == 9 && a.padSamples == 36000, "a clip mid-bar is padded back to its bar line");
+        check (b.valid && b.bar == 9 && b.padSamples == 0, "a clip already on a bar line gets no padding");
+    }
+
+    const auto captureDir = juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
+                                .getChildFile ("AtmosRiser").getChildFile ("Captures");
+    const int takeFilesBefore = captureDir.getNumberOfChildFiles (juce::File::findFiles, "take_*.wav");
 
     //-- Load the plugin ----------------------------------------------------------------------
     juce::AudioPluginFormatManager formats;
@@ -269,6 +286,69 @@ int main (int argc, char** argv)
     std::cout << "    max difference after a silent playback: " << unchanged << std::endl;
     check (unchanged < 1.0e-6f, "a silent playback did not wipe the take");
 
+    auto setParamNorm = [&] (const juce::String& name, float normalised)
+    {
+        for (auto* param : plugin->getParameters())
+            if (param->getName (64) == name)
+            {
+                param->setValueNotifyingHost (normalised);
+                return true;
+            }
+        return false;
+    };
+
+    auto peakOf = [] (const std::vector<float>& x)
+    {
+        float m = 0.0f;
+        for (auto v : x) m = juce::jmax (m, std::abs (v));
+        return m;
+    };
+
+    //-- Exporting / bouncing (offline render) must not capture ---------------------------------
+    std::cout << "Offline export" << std::endl;
+    plugin->setNonRealtime (true);
+    playTimeline (40.0, 43.0, &phraseA, 41.0);
+    plugin->setNonRealtime (false);
+    const float afterExport = maxDifference (bOut, listen());
+    std::cout << "    difference after an offline render over another phrase: " << afterExport << std::endl;
+    check (afterExport < 1.0e-6f, "an offline export/bounce does not replace the take");
+
+    //-- Lock --------------------------------------------------------------------------------------
+    std::cout << "Lock" << std::endl;
+    check (setParamNorm ("Lock", 1.0f), "the host sees the Lock switch");
+    pump (100);
+    playTimeline (50.0, 53.0, &phraseA, 51.0);
+    const float whileLocked = maxDifference (bOut, listen());
+    std::cout << "    difference after playing another phrase while locked: " << whileLocked << std::endl;
+    check (whileLocked < 1.0e-6f, "a locked take survives DAW playback");
+
+    setParamNorm ("Lock", 0.0f);
+    pump (100);
+    playTimeline (60.0, 63.0, &phraseA, 61.0);
+    const auto unlockedOut = listen();
+    const float afterUnlock = maxDifference (bOut, unlockedOut);
+    std::cout << "    difference after playing it again unlocked: " << afterUnlock << std::endl;
+    check (afterUnlock > 1.0e-3f, "after unlocking, DAW playback captures again");
+
+    //-- Level and Low Cut -------------------------------------------------------------------------
+    std::cout << "Level and Low Cut" << std::endl;
+    const float basePeak = peakOf (unlockedOut);
+    const double baseRms = rms (unlockedOut, 0.5, 2.0, 0.0);
+    setParamNorm ("Level", (-12.0f + 24.0f) / 30.0f);   // -12 dB on a -24..+6 dB range
+    pump (400);
+    const float quietPeak = peakOf (listen());
+    setParamNorm ("Level", (0.0f + 24.0f) / 30.0f);
+    std::cout << "    peak at 0 dB " << basePeak << ", at -12 dB " << quietPeak << " (ratio " << quietPeak / basePeak << ")" << std::endl;
+    check (std::abs (quietPeak / basePeak - 0.251f) < 0.03f, "Level -12 dB makes the swell 12 dB quieter");
+
+    setParamNorm ("Low Cut", 1.0f);   // 1 kHz
+    pump (400);
+    const double cutRms = rms (listen(), 0.5, 2.0, 0.0);
+    setParamNorm ("Low Cut", 0.0f);   // off
+    pump (400);
+    std::cout << "    swell rms with low cut off " << baseRms << ", at 1 kHz " << cutRms << std::endl;
+    check (cutRms < baseRms * 0.5, "Low Cut at 1 kHz removes the low end of the swell");
+
     //-- Effects are independent switches ----------------------------------------------------------
     std::cout << "Effect switches" << std::endl;
     auto setSwitch = [&] (const juce::String& name, bool on)
@@ -323,6 +403,12 @@ int main (int argc, char** argv)
 
     plugin->releaseResources();
     plugin.reset();
+
+    //-- Disk: one take file per instance -------------------------------------------------------------
+    const int takeFilesAfter = captureDir.getNumberOfChildFiles (juce::File::findFiles, "take_*.wav");
+    std::cout << "Take files" << std::endl << "    before " << takeFilesBefore << ", after " << takeFilesAfter
+              << " (this run captured 3 takes)" << std::endl;
+    check (takeFilesAfter - takeFilesBefore <= 1, "repeated captures keep only one take file per instance");
     pump (100);
 
     std::cout << (failures == 0 ? "ALL CHECKS PASSED" : "SOME CHECKS FAILED") << std::endl;

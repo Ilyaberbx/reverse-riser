@@ -309,6 +309,8 @@ export function createMockBackend(): Backend {
     // Clears the take and listens again; the mock then "plays the DAW" to show a fresh capture.
     reset() {
       stopPlayback();
+      params = { ...params, lock: 0 };
+      emit("atmos:params", { ...params });
       clearSource();
       publish();
       simulateDawPlayback();

@@ -388,6 +388,11 @@ std::shared_ptr<RenderedAudio> ReverseReverbRenderer::render (const juce::AudioB
     const int dryStart = tail + preDelay;
 
     // 6. Character of the swell.
+    // Low cut keeps the swell from muddying the mix (24 dB/oct).
+    if (s.lowCutHz > 21.0f)
+        for (int ch = 0; ch < wet.getNumChannels(); ++ch)
+            highPass (wet.getWritePointer (ch), wet.getNumSamples(), s.sampleRate, s.lowCutHz);
+
     if (s.phoneOn)   applyPhone (wet, s.sampleRate, s.phoneMix, s.phoneTone);
     if (s.chorusOn)  applyChorus (wet, s.sampleRate, s.chorusMix, s.chorusRateHz);
     if (s.tremoloOn) applyTremolo (wet, s.sampleRate, s.bpm, s.tremoloBeats, s.tremoloMix, dryStart);

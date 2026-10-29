@@ -13,7 +13,10 @@ export type ParamId =
   | "chorusMix"
   | "chorusRate"
   | "tremoloMix"
-  | "tremoloTiming";
+  | "tremoloTiming"
+  | "level"
+  | "lowCut"
+  | "lock";
 
 export type Params = Record<ParamId, number>;
 

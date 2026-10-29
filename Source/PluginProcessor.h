@@ -2,6 +2,7 @@
 
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "ReverseReverbRenderer.h"
+#include "BarAlignment.h"
 
 /**
     AtmosRiser: listens to the track it sits on (or a dropped file), lets you pick a segment,
@@ -94,6 +95,8 @@ public:
     juce::File writeExportForDrag (juce::String& errorMessage);
     bool exportRenderedToFile (const juce::File& file, juce::String& errorMessage) const;
     juce::String getDefaultExportName() const;
+    /** Bar to drop an exported clip on, and the silence that puts its start on that bar line. */
+    BarAlignment getExportAlignment() const;
 
     // Snapshots for the UI
     int getStateVersion() const noexcept { return stateVersion.load(); }
@@ -199,6 +202,7 @@ private:
 
     std::atomic<bool> discardTake { false };   // set by clearRecording() while a take is being recorded
     bool waitForTransportStop = false;           // audio thread: a loop/jump ended the take
+    juce::File lastSessionTake;                  // take file written by this instance in this session
 
     // Preview playback
     std::atomic<int> requestedSource { 0 }, activeSource { 0 };

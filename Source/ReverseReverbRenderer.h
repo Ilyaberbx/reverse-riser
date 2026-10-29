@@ -17,7 +17,8 @@ struct ReverseReverbSettings
     float     roomSize        = 0.8f;     // 0..1, Freeverb room size
     float     damping         = 0.4f;     // 0..1
     float     width           = 1.0f;     // 0..1
-    float     wetGain         = 1.0f;     // level of the swell
+    float     wetGain         = 1.0f;     // level of the swell (linear)
+    float     lowCutHz        = 20.0f;    // high-pass on the swell; 20 Hz = off
     float     dryGain         = 1.0f;     // level of the original segment
     bool      includeOriginal = true;     // append the untouched segment after the swell
     float     edgeFadeMs      = 5.0f;     // fade applied to the cut segment edges (click removal)

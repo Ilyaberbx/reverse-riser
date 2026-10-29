@@ -33,6 +33,18 @@ export const StopIcon = (p: IconProps) => (
   </Svg>
 );
 
+/** Padlock whose shackle drops shut when locked (animated by CSS). */
+export function LockIcon({ locked, size = 14 }: { locked: boolean; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2}
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={`lock-icon ${locked ? "is-locked" : ""}`}>
+      <path className="lock-icon__shackle" d="M7.5 11V7.5a4.5 4.5 0 0 1 9 0V11" />
+      <rect x="4.5" y="11" width="15" height="10" rx="2.5" />
+      <circle cx="12" cy="16" r="1.4" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export const LoopIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="M17 2.5l3 3-3 3" />
