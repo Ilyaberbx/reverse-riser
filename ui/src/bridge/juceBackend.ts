@@ -23,7 +23,7 @@ export function isRunningInJuce(): boolean {
   return !!juce?.backend && !!juce.initialisationData?.__juce__functions?.includes("ready");
 }
 
-/** Talks to AtmosRiserEditor (PluginEditor.cpp) through JUCE's native-function protocol. */
+/** Talks to GlacierRiserEditor (PluginEditor.cpp) through JUCE's native-function protocol. */
 export function createJuceBackend(): Backend {
   const juce = window.__JUCE__!.backend;
   const pending = new Map<number, (result: unknown) => void>();

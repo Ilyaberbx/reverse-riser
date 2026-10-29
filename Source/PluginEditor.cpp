@@ -1,5 +1,5 @@
 #include "PluginEditor.h"
-#include "AtmosRiserUIData.h"
+#include "GlacierRiserUIData.h"
 
 namespace
 {
@@ -19,7 +19,7 @@ namespace
 }
 
 //==============================================================================
-AtmosRiserEditor::AtmosRiserEditor (AtmosRiserProcessor& p)
+GlacierRiserEditor::GlacierRiserEditor (GlacierRiserProcessor& p)
     : AudioProcessorEditor (&p), processor (p)
 {
     auto options = createBrowserOptions();
@@ -32,7 +32,7 @@ AtmosRiserEditor::AtmosRiserEditor (AtmosRiserProcessor& p)
     }
     else
     {
-        fallbackLabel.setText ("AtmosRiser needs the Microsoft Edge WebView2 Runtime to draw its interface.\n"
+        fallbackLabel.setText ("Glacier Riser needs the Microsoft Edge WebView2 Runtime to draw its interface.\n"
                                "Install it from microsoft.com/edge/webview2 and reopen the plugin.",
                                juce::dontSendNotification);
         fallbackLabel.setJustificationType (juce::Justification::centred);
@@ -50,17 +50,17 @@ AtmosRiserEditor::AtmosRiserEditor (AtmosRiserProcessor& p)
     startTimerHz (30);
 }
 
-AtmosRiserEditor::~AtmosRiserEditor()
+GlacierRiserEditor::~GlacierRiserEditor()
 {
     stopTimer();
 }
 
-void AtmosRiserEditor::paint (juce::Graphics& g)
+void GlacierRiserEditor::paint (juce::Graphics& g)
 {
     g.fillAll (backdrop);
 }
 
-void AtmosRiserEditor::resized()
+void GlacierRiserEditor::resized()
 {
     if (browser != nullptr)
         browser->setBounds (getLocalBounds());
@@ -69,15 +69,15 @@ void AtmosRiserEditor::resized()
 }
 
 //==============================================================================
-std::optional<juce::WebBrowserComponent::Resource> AtmosRiserEditor::serveResource (const juce::String& url)
+std::optional<juce::WebBrowserComponent::Resource> GlacierRiserEditor::serveResource (const juce::String& url)
 {
     const auto path = url.upToFirstOccurrenceOf ("?", false, false);
 
     if (path == "/" || path == "/index.html")
     {
-        const auto* bytes = reinterpret_cast<const std::byte*> (AtmosRiserUIData::index_html);
+        const auto* bytes = reinterpret_cast<const std::byte*> (GlacierRiserUIData::index_html);
         juce::WebBrowserComponent::Resource resource;
-        resource.data = std::vector<std::byte> (bytes, bytes + AtmosRiserUIData::index_htmlSize);
+        resource.data = std::vector<std::byte> (bytes, bytes + GlacierRiserUIData::index_htmlSize);
         resource.mimeType = "text/html";
         return resource;
     }
@@ -85,12 +85,12 @@ std::optional<juce::WebBrowserComponent::Resource> AtmosRiserEditor::serveResour
     return std::nullopt;
 }
 
-juce::WebBrowserComponent::Options AtmosRiserEditor::createBrowserOptions()
+juce::WebBrowserComponent::Options GlacierRiserEditor::createBrowserOptions()
 {
     using Options = juce::WebBrowserComponent::Options;
 
     // WebView2 needs a writable profile folder: next to the host .exe (the default) usually is not.
-    const auto userData = juce::File::getSpecialLocation (juce::File::tempDirectory).getChildFile ("AtmosRiserWebView2");
+    const auto userData = juce::File::getSpecialLocation (juce::File::tempDirectory).getChildFile ("GlacierRiserWebView2");
 
     return Options {}
         .withBackend (Options::Backend::webview2)
@@ -130,8 +130,8 @@ juce::WebBrowserComponent::Options AtmosRiserEditor::createBrowserOptions()
         })
         .withNativeFunction ("play", [this] (const Args& args, Completion done)
         {
-            processor.startPlayback (argString (args, 0) == "raw" ? AtmosRiserProcessor::PlaySource::raw
-                                                                  : AtmosRiserProcessor::PlaySource::processed);
+            processor.startPlayback (argString (args, 0) == "raw" ? GlacierRiserProcessor::PlaySource::raw
+                                                                  : GlacierRiserProcessor::PlaySource::processed);
             done (true);
         })
         .withNativeFunction ("stop", [this] (const Args&, Completion done)
@@ -221,7 +221,7 @@ juce::WebBrowserComponent::Options AtmosRiserEditor::createBrowserOptions()
 }
 
 //==============================================================================
-juce::var AtmosRiserEditor::makeResult (bool ok, const juce::String& message) const
+juce::var GlacierRiserEditor::makeResult (bool ok, const juce::String& message) const
 {
     auto* o = new juce::DynamicObject();
     o->setProperty ("ok", ok);
@@ -229,7 +229,7 @@ juce::var AtmosRiserEditor::makeResult (bool ok, const juce::String& message) co
     return juce::var (o);
 }
 
-juce::var AtmosRiserEditor::makeInitialPayload()
+juce::var GlacierRiserEditor::makeInitialPayload()
 {
     auto* o = new juce::DynamicObject();
     o->setProperty ("state", processor.getStateSnapshot());
@@ -246,21 +246,21 @@ juce::var AtmosRiserEditor::makeInitialPayload()
     return juce::var (o);
 }
 
-void AtmosRiserEditor::emit (const juce::String& eventId, const juce::var& payload)
+void GlacierRiserEditor::emit (const juce::String& eventId, const juce::var& payload)
 {
     if (browser != nullptr && pageReady)
         browser->emitEventIfBrowserIsVisible (juce::Identifier (eventId), payload);
 }
 
-void AtmosRiserEditor::toast (const juce::String& text, bool isError)
+void GlacierRiserEditor::toast (const juce::String& text, bool isError)
 {
     auto* o = new juce::DynamicObject();
     o->setProperty ("text", text);
     o->setProperty ("error", isError);
-    emit ("atmos:toast", juce::var (o));
+    emit ("glacier:toast", juce::var (o));
 }
 
-void AtmosRiserEditor::timerCallback()
+void GlacierRiserEditor::timerCallback()
 {
     if (! pageReady)
         return;
@@ -268,20 +268,20 @@ void AtmosRiserEditor::timerCallback()
     if (const int v = processor.getStateVersion(); v != lastStateVersion)
     {
         lastStateVersion = v;
-        emit ("atmos:state", processor.getStateSnapshot());
+        emit ("glacier:state", processor.getStateSnapshot());
     }
 
     if (const int v = processor.getWaveformVersion(); v != lastWaveformVersion)
     {
         lastWaveformVersion = v;
-        emit ("atmos:waveforms", processor.getWaveformSnapshot());
+        emit ("glacier:waveforms", processor.getWaveformSnapshot());
     }
 
     // The theme is shared by every instance: follow a change made in another editor.
     if (const int v = UiSettings::themeVersion.load(); v != lastThemeVersion)
     {
         lastThemeVersion = v;
-        emit ("atmos:theme", UiSettings::getTheme());
+        emit ("glacier:theme", UiSettings::getTheme());
     }
 
     if (const int v = processor.getNoticeVersion(); v != lastNoticeVersion)
@@ -297,7 +297,7 @@ void AtmosRiserEditor::timerCallback()
     if (auto json = juce::JSON::toString (params, true); json != lastParamsJson)
     {
         lastParamsJson = json;
-        emit ("atmos:params", params);
+        emit ("glacier:params", params);
     }
 
     const auto playback = processor.getPlaybackSnapshot();
@@ -305,18 +305,18 @@ void AtmosRiserEditor::timerCallback()
     if (auto json = juce::JSON::toString (playback, true); json != lastPlaybackJson)
     {
         lastPlaybackJson = json;
-        emit ("atmos:playback", playback);
+        emit ("glacier:playback", playback);
     }
 }
 
 //==============================================================================
-void AtmosRiserEditor::openFileChooser()
+void GlacierRiserEditor::openFileChooser()
 {
     fileChooser = std::make_unique<juce::FileChooser> ("Load an audio file",
                                                        juce::File::getSpecialLocation (juce::File::userMusicDirectory),
                                                        processor.formatManager.getWildcardForAllFormats());
 
-    juce::Component::SafePointer<AtmosRiserEditor> safeThis (this);
+    juce::Component::SafePointer<GlacierRiserEditor> safeThis (this);
 
     fileChooser->launchAsync (juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles,
                               [safeThis] (const juce::FileChooser& fc)
@@ -338,14 +338,14 @@ void AtmosRiserEditor::openFileChooser()
                               });
 }
 
-void AtmosRiserEditor::exportWithChooser()
+void GlacierRiserEditor::exportWithChooser()
 {
     auto dir = processor.getExportsDirectory();
     dir.createDirectory();
 
     fileChooser = std::make_unique<juce::FileChooser> ("Export as WAV", dir.getChildFile (processor.getDefaultExportName()), "*.wav");
 
-    juce::Component::SafePointer<AtmosRiserEditor> safeThis (this);
+    juce::Component::SafePointer<GlacierRiserEditor> safeThis (this);
 
     fileChooser->launchAsync (juce::FileBrowserComponent::saveMode
                                   | juce::FileBrowserComponent::canSelectFiles

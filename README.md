@@ -1,4 +1,7 @@
-# AtmosRiser (VST3)
+# Glacier Riser (VST3)
+
+Formerly AtmosRiser. Existing projects that used AtmosRiser open with Glacier Riser: the plugin
+ID is unchanged.
 
 A reverse-reverb and riser plugin. Put it on a vocal or instrument track, press play: it
 listens to the track, picks the first phrase, and renders a reverse-reverb swell that rises
@@ -7,7 +10,7 @@ result onto a track as a WAV, or drop any audio file into the plugin instead.
 
 ## The track workflow
 
-1. Insert AtmosRiser on the track. It listens automatically: there is no button to press.
+1. Insert Glacier Riser on the track. It listens automatically: there is no button to press.
 2. Press play in your DAW (space bar or the play button) over the part you want. The waveform
    shows "Capturing the track" while it records what the track plays (up to the last 90 s).
    The track itself passes through unchanged.
@@ -22,7 +25,7 @@ capture. A playback where the track is silent keeps the previous take. **RESET**
 recording inside the plugin and releases the lock.
 
 Dragged and exported clips start exactly on a bar line (padded with silence), and the file name
-says which bar to drop them on, e.g. `track_drop-on-bar-16_atmosriser.wav`. With grid snapping on,
+says which bar to drop them on, e.g. `track_drop-on-bar-16_glacier-riser.wav`. With grid snapping on,
 the swell lands sample-accurately in front of the phrase.
 
 Adjust the phrase in **RAW** view (drag to select, drag the handles). Takes are saved in
@@ -62,7 +65,7 @@ cmake -S . -B build -G "Visual Studio 17 2022" -A x64
 ```
 
 ```bash
-cmake --build build --config Release --target AtmosRiser_VST3 AtmosRiser_Standalone -- -m
+cmake --build build --config Release --target GlacierRiser_VST3 GlacierRiser_Standalone -- -m
 ```
 
 The CMake build runs `npm install` on first configure and `npm run build` whenever a UI source
@@ -75,8 +78,8 @@ no extra DLL to ship.
 
 Outputs:
 
-- `build/AtmosRiser_artefacts/Release/VST3/AtmosRiser.vst3`
-- `build/AtmosRiser_artefacts/Release/Standalone/AtmosRiser.exe`
+- `build/GlacierRiser_artefacts/Release/VST3/Glacier Riser.vst3`
+- `build/GlacierRiser_artefacts/Release/Standalone/Glacier Riser.exe`
 
 Install by copying the `.vst3` folder into `C:\Program Files\Common Files\VST3\` and
 rescanning plugins in your DAW.
@@ -105,8 +108,9 @@ rescanning plugins in your DAW.
 Knobs and the orb respond to vertical drag (Shift for fine), the mouse wheel, arrow keys and
 Page Up/Down. Double-click resets a control.
 
-Exports and drag-outs are written to `Documents\AtmosRiser Exports`. Dropped files are copied
-to `%APPDATA%\AtmosRiser\Imported Audio` so the DAW project can reload them later.
+Exports and drag-outs are written to `Documents\Glacier Riser Exports`. Dropped files are copied
+to `%APPDATA%\AtmosRiser\Imported Audio` so the DAW project can reload them later. The
+`%APPDATA%\AtmosRiser` folder keeps the former name on purpose: saved projects point into it.
 
 ## Testing against a simulated DAW
 
@@ -116,11 +120,11 @@ swell is silent beforehand, rises, and peaks where the phrase sits. It also chec
 detector.
 
 ```bash
-cmake --build build --config Release --target AtmosRiserHostCheck
+cmake --build build --config Release --target GlacierRiserHostCheck
 ```
 
 ```bash
-build/AtmosRiserHostCheck_artefacts/Release/AtmosRiserHostCheck.exe build/AtmosRiser_artefacts/Release/VST3/AtmosRiser.vst3
+build/GlacierRiserHostCheck_artefacts/Release/GlacierRiserHostCheck.exe "build/GlacierRiser_artefacts/Release/VST3/Glacier Riser.vst3"
 ```
 
 ## How the effect is rendered

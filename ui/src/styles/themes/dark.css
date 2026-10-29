@@ -29,8 +29,8 @@
   --glass-shadow: 0 2px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --hairline: rgba(255, 255, 255, 0.07);
 
-  --logo-a: #f2f3f5;
-  --logo-b: #8b8f96;
+  --logo-a: #e4effb;   /* the mark's own dark-mode ice (#bcd6f5) */
+  --logo-b: #bcd6f5;
 
   color-scheme: dark;
 }

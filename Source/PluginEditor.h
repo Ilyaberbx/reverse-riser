@@ -4,7 +4,7 @@
 #include "UiSettings.h"
 
 /**
-    Hosts the ATMOSRISER web UI (ui/ -> bundled into a single index.html) inside a WebView2
+    Hosts the Glacier Riser web UI (ui/ -> bundled into a single index.html) inside a WebView2
     browser and bridges it to the processor.
 
     Bridge protocol (see ui/src/bridge/juceBackend.ts for the other side)
@@ -13,15 +13,15 @@
         loadPreset, savePreset, openFile, exportWav, openExportsFolder,
         startDragOut, loadAudioData, setTheme
       Events (C++ -> JS):
-        atmos:state, atmos:params, atmos:waveforms, atmos:playback, atmos:toast, atmos:theme
+        glacier:state, glacier:params, glacier:waveforms, glacier:playback, glacier:toast, glacier:theme
       Initialisation data: theme (the saved UI theme, applied before the page draws)
 */
-class AtmosRiserEditor : public juce::AudioProcessorEditor,
+class GlacierRiserEditor : public juce::AudioProcessorEditor,
                          private juce::Timer
 {
 public:
-    explicit AtmosRiserEditor (AtmosRiserProcessor&);
-    ~AtmosRiserEditor() override;
+    explicit GlacierRiserEditor (GlacierRiserProcessor&);
+    ~GlacierRiserEditor() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
@@ -42,7 +42,7 @@ private:
     void openFileChooser();
     void exportWithChooser();
 
-    AtmosRiserProcessor& processor;
+    GlacierRiserProcessor& processor;
     std::unique_ptr<juce::WebBrowserComponent> browser;
     juce::Label fallbackLabel;
     std::unique_ptr<juce::FileChooser> fileChooser;
@@ -52,5 +52,5 @@ private:
     int lastThemeVersion = UiSettings::themeVersion.load();
     juce::String lastParamsJson, lastPlaybackJson;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AtmosRiserEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlacierRiserEditor)
 };

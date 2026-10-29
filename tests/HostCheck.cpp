@@ -5,7 +5,7 @@
 //   - a silent playback keeps the previous take
 // Also checks the sibilance detector on a synthetic "s" + vowel.
 //
-// Usage: AtmosRiserHostCheck <path to AtmosRiser.vst3>
+// Usage: GlacierRiserHostCheck <path to Glacier Riser.vst3>
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_audio_formats/juce_audio_formats.h>
@@ -90,7 +90,7 @@ int main (int argc, char** argv)
 
     if (argc < 2)
     {
-        std::cout << "usage: AtmosRiserHostCheck <AtmosRiser.vst3>" << std::endl;
+        std::cout << "usage: GlacierRiserHostCheck <Glacier Riser.vst3>" << std::endl;
         return 2;
     }
 

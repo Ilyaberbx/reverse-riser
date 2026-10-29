@@ -4,10 +4,11 @@
 #include <atomic>
 
 /**
-    Per-user UI preferences shared by every AtmosRiser instance (currently just the theme).
+    Per-user UI preferences shared by every Glacier Riser instance (currently just the theme).
     Deliberately kept out of the processor: not a parameter, not in presets, undo or the DAW
     project, so changing the look can never touch a session.
-    Stored in %APPDATA%\AtmosRiser\ui-settings.xml. Message thread only.
+    Stored in %APPDATA%\AtmosRiser\ui-settings.xml (the user-data folder keeps the
+    former name, see PluginProcessor.cpp). Message thread only.
 */
 namespace UiSettings
 {

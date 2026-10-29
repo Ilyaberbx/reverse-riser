@@ -208,7 +208,7 @@ namespace
 }
 
 //==============================================================================
-const juce::StringArray& AtmosRiserProcessor::uiParameterIds()
+const juce::StringArray& GlacierRiserProcessor::uiParameterIds()
 {
     static const juce::StringArray ids { IDs::reverse, IDs::fade, IDs::size,
                                          IDs::phoneOn, IDs::chorusOn, IDs::tremoloOn, IDs::includeOriginal, IDs::phoneMix, IDs::phoneTone,
@@ -217,19 +217,19 @@ const juce::StringArray& AtmosRiserProcessor::uiParameterIds()
     return ids;
 }
 
-const juce::StringArray& AtmosRiserProcessor::reverseChoiceNames()
+const juce::StringArray& GlacierRiserProcessor::reverseChoiceNames()
 {
     static const juce::StringArray names { "1/8 BAR", "1/4 BAR", "1/2 BAR", "1 BAR", "2 BARS", "4 BARS", "8 BARS" };
     return names;
 }
 
-const juce::StringArray& AtmosRiserProcessor::tremoloTimingNames()
+const juce::StringArray& GlacierRiserProcessor::tremoloTimingNames()
 {
     static const juce::StringArray names { "1/4", "1/8", "1/16", "1/32", "1/8T", "1/16T" };
     return names;
 }
 
-AtmosRiserProcessor::AtmosRiserProcessor()
+GlacierRiserProcessor::GlacierRiserProcessor()
     : AudioProcessor (BusesProperties().withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
                                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
       apvts (*this, nullptr, "PARAMETERS", createParameterLayout())
@@ -260,7 +260,7 @@ AtmosRiserProcessor::AtmosRiserProcessor()
     startTimer (30);
 }
 
-AtmosRiserProcessor::~AtmosRiserProcessor()
+GlacierRiserProcessor::~GlacierRiserProcessor()
 {
     stopTimer();
 
@@ -268,7 +268,7 @@ AtmosRiserProcessor::~AtmosRiserProcessor()
         apvts.removeParameterListener (id, this);
 }
 
-juce::AudioProcessorValueTreeState::ParameterLayout AtmosRiserProcessor::createParameterLayout()
+juce::AudioProcessorValueTreeState::ParameterLayout GlacierRiserProcessor::createParameterLayout()
 {
     using Float  = juce::AudioParameterFloat;
     using Choice = juce::AudioParameterChoice;
@@ -302,7 +302,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AtmosRiserProcessor::createP
 }
 
 //==============================================================================
-void AtmosRiserProcessor::prepareToPlay (double sampleRate, int)
+void GlacierRiserProcessor::prepareToPlay (double sampleRate, int)
 {
     const double previous = currentSampleRate.exchange (sampleRate);
     playing = false;
@@ -324,7 +324,7 @@ void AtmosRiserProcessor::prepareToPlay (double sampleRate, int)
         requestRender();
 }
 
-bool AtmosRiserProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool GlacierRiserProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
     const auto out = layouts.getMainOutputChannelSet();
 
@@ -335,7 +335,7 @@ bool AtmosRiserProcessor::isBusesLayoutSupported (const BusesLayout& layouts) co
     return in.isDisabled() || in == out;
 }
 
-void AtmosRiserProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void GlacierRiserProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
     const int numSamples = buffer.getNumSamples();
@@ -517,13 +517,13 @@ void AtmosRiserProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     playPosition = pos;
 }
 
-juce::AudioProcessorEditor* AtmosRiserProcessor::createEditor()
+juce::AudioProcessorEditor* GlacierRiserProcessor::createEditor()
 {
-    return new AtmosRiserEditor (*this);
+    return new GlacierRiserEditor (*this);
 }
 
 //==============================================================================
-void AtmosRiserProcessor::getStateInformation (juce::MemoryBlock& destData)
+void GlacierRiserProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = apvts.copyState();
     const bool hasFile = sourceKind == SourceKind::file || sourceKind == SourceKind::capture;
@@ -544,7 +544,7 @@ void AtmosRiserProcessor::getStateInformation (juce::MemoryBlock& destData)
         copyXmlToBinary (*xml, destData);
 }
 
-void AtmosRiserProcessor::setStateInformation (const void* data, int sizeInBytes)
+void GlacierRiserProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     auto xml = getXmlFromBinary (data, sizeInBytes);
 
@@ -566,7 +566,7 @@ void AtmosRiserProcessor::setStateInformation (const void* data, int sizeInBytes
 }
 
 //==============================================================================
-void AtmosRiserProcessor::setSource (juce::AudioBuffer<float>&& audio, double rate, SourceKind kind, const juce::File& file)
+void GlacierRiserProcessor::setSource (juce::AudioBuffer<float>&& audio, double rate, SourceKind kind, const juce::File& file)
 {
     sourceBuffer = std::move (audio);
     sourceSampleRate = rate;
@@ -588,7 +588,7 @@ void AtmosRiserProcessor::setSource (juce::AudioBuffer<float>&& audio, double ra
     requestRender();
 }
 
-std::pair<double, double> AtmosRiserProcessor::defaultSelection() const
+std::pair<double, double> GlacierRiserProcessor::defaultSelection() const
 {
     const double total = sourceSampleRate > 0.0 ? sourceBuffer.getNumSamples() / sourceSampleRate : 0.0;
 
@@ -602,7 +602,7 @@ std::pair<double, double> AtmosRiserProcessor::defaultSelection() const
     return { 0.0, total };
 }
 
-void AtmosRiserProcessor::loadDemoSource()
+void GlacierRiserProcessor::loadDemoSource()
 {
     // A short, bright A-major pluck so the standalone app has something to show and play.
     constexpr double sr = 44100.0;
@@ -642,7 +642,7 @@ void AtmosRiserProcessor::loadDemoSource()
     setSource (std::move (demo), sr, SourceKind::demo, {});
 }
 
-bool AtmosRiserProcessor::loadSourceFile (const juce::File& file, juce::String& errorMessage)
+bool GlacierRiserProcessor::loadSourceFile (const juce::File& file, juce::String& errorMessage)
 {
     JUCE_ASSERT_MESSAGE_THREAD
 
@@ -663,7 +663,7 @@ bool AtmosRiserProcessor::loadSourceFile (const juce::File& file, juce::String& 
     return true;
 }
 
-bool AtmosRiserProcessor::importAudioData (const juce::String& fileName, const juce::MemoryBlock& data, juce::String& errorMessage)
+bool GlacierRiserProcessor::importAudioData (const juce::String& fileName, const juce::MemoryBlock& data, juce::String& errorMessage)
 {
     auto dir = getImportDirectory();
 
@@ -695,7 +695,7 @@ bool AtmosRiserProcessor::importAudioData (const juce::String& fileName, const j
     return loadSourceFile (target, errorMessage);
 }
 
-void AtmosRiserProcessor::setSelection (double startSeconds, double endSeconds)
+void GlacierRiserProcessor::setSelection (double startSeconds, double endSeconds)
 {
     JUCE_ASSERT_MESSAGE_THREAD
 
@@ -723,14 +723,14 @@ void AtmosRiserProcessor::setSelection (double startSeconds, double endSeconds)
     requestRender();
 }
 
-void AtmosRiserProcessor::rebuildRawPeaks()
+void GlacierRiserProcessor::rebuildRawPeaks()
 {
     rawPeaks = computePeaks (sourceBuffer, numPeakBuckets);
     ++waveformVersion;
 }
 
 //==============================================================================
-void AtmosRiserProcessor::clearRecording()
+void GlacierRiserProcessor::clearRecording()
 {
     // Reset means "capture again", so it also releases the lock.
     if (auto* lockParam = apvts.getParameter (IDs::lock); lockParam != nullptr && lockParam->getValue() > 0.5f)
@@ -773,7 +773,7 @@ void AtmosRiserProcessor::clearRecording()
     bumpState();
 }
 
-void AtmosRiserProcessor::finalizeCapture()
+void GlacierRiserProcessor::finalizeCapture()
 {
     if (discardTake.exchange (false))
     {
@@ -841,7 +841,7 @@ void AtmosRiserProcessor::finalizeCapture()
     juce::ignoreUnused (seconds);
 }
 
-juce::String AtmosRiserProcessor::describeTimelinePosition (double sourceSeconds) const
+juce::String GlacierRiserProcessor::describeTimelinePosition (double sourceSeconds) const
 {
     if (sourceKind != SourceKind::capture)
         return {};
@@ -861,7 +861,7 @@ juce::String AtmosRiserProcessor::describeTimelinePosition (double sourceSeconds
     return {};
 }
 
-void AtmosRiserProcessor::postNotice (const juce::String& text, bool isError)
+void GlacierRiserProcessor::postNotice (const juce::String& text, bool isError)
 {
     notice = text;
     noticeIsError = isError;
@@ -869,25 +869,25 @@ void AtmosRiserProcessor::postNotice (const juce::String& text, bool isError)
 }
 
 //==============================================================================
-void AtmosRiserProcessor::setParameterFromUi (const juce::String& id, float realValue)
+void GlacierRiserProcessor::setParameterFromUi (const juce::String& id, float realValue)
 {
     if (auto* param = apvts.getParameter (id))
         param->setValueNotifyingHost (param->convertTo0to1 (realValue));
 }
 
-void AtmosRiserProcessor::beginParameterGesture (const juce::String& id)
+void GlacierRiserProcessor::beginParameterGesture (const juce::String& id)
 {
     if (auto* param = apvts.getParameter (id))
         param->beginChangeGesture();
 }
 
-void AtmosRiserProcessor::endParameterGesture (const juce::String& id)
+void GlacierRiserProcessor::endParameterGesture (const juce::String& id)
 {
     if (auto* param = apvts.getParameter (id))
         param->endChangeGesture();
 }
 
-void AtmosRiserProcessor::parameterChanged (const juce::String&, float)
+void GlacierRiserProcessor::parameterChanged (const juce::String&, float)
 {
     requestRender();
 
@@ -896,30 +896,32 @@ void AtmosRiserProcessor::parameterChanged (const juce::String&, float)
 }
 
 //==============================================================================
-juce::File AtmosRiserProcessor::getUserPresetDirectory() const
+// User data stays in %APPDATA%\AtmosRiser (the plugin's former name): saved DAW projects point to
+// captured takes and imported audio there by full path, so moving it would break them.
+juce::File GlacierRiserProcessor::getUserPresetDirectory() const
 {
     return juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
                .getChildFile ("AtmosRiser").getChildFile ("Presets");
 }
 
-juce::File AtmosRiserProcessor::getImportDirectory() const
+juce::File GlacierRiserProcessor::getImportDirectory() const
 {
     return juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
                .getChildFile ("AtmosRiser").getChildFile ("Imported Audio");
 }
 
-juce::File AtmosRiserProcessor::getCaptureDirectory() const
+juce::File GlacierRiserProcessor::getCaptureDirectory() const
 {
     return juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
                .getChildFile ("AtmosRiser").getChildFile ("Captures");
 }
 
-juce::File AtmosRiserProcessor::getExportsDirectory() const
+juce::File GlacierRiserProcessor::getExportsDirectory() const
 {
-    return juce::File::getSpecialLocation (juce::File::userDocumentsDirectory).getChildFile ("AtmosRiser Exports");
+    return juce::File::getSpecialLocation (juce::File::userDocumentsDirectory).getChildFile ("Glacier Riser Exports");
 }
 
-void AtmosRiserProcessor::refreshUserPresets()
+void GlacierRiserProcessor::refreshUserPresets()
 {
     userPresets.clear();
 
@@ -946,7 +948,7 @@ void AtmosRiserProcessor::refreshUserPresets()
                [] (const Preset& a, const Preset& b) { return a.name.compareIgnoreCase (b.name) < 0; });
 }
 
-juce::StringArray AtmosRiserProcessor::getPresetNames() const
+juce::StringArray GlacierRiserProcessor::getPresetNames() const
 {
     juce::StringArray names;
 
@@ -956,7 +958,7 @@ juce::StringArray AtmosRiserProcessor::getPresetNames() const
     return names;
 }
 
-void AtmosRiserProcessor::applyPresetValues (const juce::NamedValueSet& values)
+void GlacierRiserProcessor::applyPresetValues (const juce::NamedValueSet& values)
 {
     applyingPreset = true;
 
@@ -974,7 +976,7 @@ void AtmosRiserProcessor::applyPresetValues (const juce::NamedValueSet& values)
     applyingPreset = false;
 }
 
-bool AtmosRiserProcessor::loadPreset (int index)
+bool GlacierRiserProcessor::loadPreset (int index)
 {
     const int numFactory = (int) factoryPresets.size();
     const int total = numFactory + (int) userPresets.size();
@@ -991,7 +993,7 @@ bool AtmosRiserProcessor::loadPreset (int index)
     return true;
 }
 
-bool AtmosRiserProcessor::saveUserPreset (const juce::String& rawName, juce::String& errorMessage)
+bool GlacierRiserProcessor::saveUserPreset (const juce::String& rawName, juce::String& errorMessage)
 {
     const auto name = rawName.trim().substring (0, 48);
 
@@ -1048,19 +1050,19 @@ bool AtmosRiserProcessor::saveUserPreset (const juce::String& rawName, juce::Str
 }
 
 //==============================================================================
-void AtmosRiserProcessor::startPlayback (PlaySource source) noexcept
+void GlacierRiserProcessor::startPlayback (PlaySource source) noexcept
 {
     requestedSource = (int) source;
 }
 
-void AtmosRiserProcessor::setLoopEnabled (bool shouldLoop) noexcept
+void GlacierRiserProcessor::setLoopEnabled (bool shouldLoop) noexcept
 {
     if (loopEnabled.exchange (shouldLoop) != shouldLoop)
         bumpState();
 }
 
 //==============================================================================
-void AtmosRiserProcessor::timerCallback()
+void GlacierRiserProcessor::timerCallback()
 {
     // Finish a state restore (setStateInformation may run on any thread).
     juce::ValueTree restore;
@@ -1145,7 +1147,7 @@ void AtmosRiserProcessor::timerCallback()
     }
 }
 
-double AtmosRiserProcessor::computeTailSeconds() const
+double GlacierRiserProcessor::computeTailSeconds() const
 {
     const auto index = juce::jlimit (0, (int) std::size (reverseBars) - 1,
                                      (int) apvts.getRawParameterValue (IDs::reverse)->load());
@@ -1155,7 +1157,7 @@ double AtmosRiserProcessor::computeTailSeconds() const
     return juce::jlimit (0.05, 32.0, reverseBars[index] * beatsPerBar * 60.0 / bpm);
 }
 
-ReverseReverbSettings AtmosRiserProcessor::currentSettings() const
+ReverseReverbSettings GlacierRiserProcessor::currentSettings() const
 {
     auto raw = [this] (const juce::String& id) { return apvts.getRawParameterValue (id)->load(); };
 
@@ -1192,7 +1194,7 @@ ReverseReverbSettings AtmosRiserProcessor::currentSettings() const
     return s;
 }
 
-void AtmosRiserProcessor::renderNow()
+void GlacierRiserProcessor::renderNow()
 {
     JUCE_ASSERT_MESSAGE_THREAD
 
@@ -1238,7 +1240,7 @@ void AtmosRiserProcessor::renderNow()
 }
 
 //==============================================================================
-BarAlignment AtmosRiserProcessor::getExportAlignment() const
+BarAlignment GlacierRiserProcessor::getExportAlignment() const
 {
     auto clip = renderedForUi;
 
@@ -1253,7 +1255,7 @@ BarAlignment AtmosRiserProcessor::getExportAlignment() const
     return alignToBar (clipStartPpq, bpm, beatsPerBar, clip->sampleRate);
 }
 
-juce::String AtmosRiserProcessor::getDefaultExportName() const
+juce::String GlacierRiserProcessor::getDefaultExportName() const
 {
     juce::String base;
 
@@ -1269,16 +1271,16 @@ juce::String AtmosRiserProcessor::getDefaultExportName() const
     if (const auto align = getExportAlignment(); align.valid)
         base << "_drop-on-bar-" << align.bar;
 
-    return base + "_atmosriser.wav";
+    return base + "_glacier-riser.wav";
 }
 
-juce::File AtmosRiserProcessor::writeExportForDrag (juce::String& errorMessage)
+juce::File GlacierRiserProcessor::writeExportForDrag (juce::String& errorMessage)
 {
     auto file = getExportsDirectory().getChildFile (getDefaultExportName()).getNonexistentSibling();
     return exportRenderedToFile (file, errorMessage) ? file : juce::File();
 }
 
-bool AtmosRiserProcessor::exportRenderedToFile (const juce::File& file, juce::String& errorMessage) const
+bool GlacierRiserProcessor::exportRenderedToFile (const juce::File& file, juce::String& errorMessage) const
 {
     auto clip = renderedForUi;
 
@@ -1307,7 +1309,7 @@ bool AtmosRiserProcessor::exportRenderedToFile (const juce::File& file, juce::St
 }
 
 //==============================================================================
-juce::var AtmosRiserProcessor::getStateSnapshot() const
+juce::var GlacierRiserProcessor::getStateSnapshot() const
 {
     auto* o = new juce::DynamicObject();
     const double sourceSeconds = sourceSampleRate > 0.0 ? sourceBuffer.getNumSamples() / sourceSampleRate : 0.0;
@@ -1376,7 +1378,7 @@ juce::var AtmosRiserProcessor::getStateSnapshot() const
     return juce::var (o);
 }
 
-juce::var AtmosRiserProcessor::getParameterSnapshot() const
+juce::var GlacierRiserProcessor::getParameterSnapshot() const
 {
     auto* o = new juce::DynamicObject();
 
@@ -1386,7 +1388,7 @@ juce::var AtmosRiserProcessor::getParameterSnapshot() const
     return juce::var (o);
 }
 
-juce::var AtmosRiserProcessor::getWaveformSnapshot() const
+juce::var GlacierRiserProcessor::getWaveformSnapshot() const
 {
     auto* o = new juce::DynamicObject();
     o->setProperty ("raw", peaksToVar (rawPeaks));
@@ -1395,7 +1397,7 @@ juce::var AtmosRiserProcessor::getWaveformSnapshot() const
     return juce::var (o);
 }
 
-juce::var AtmosRiserProcessor::getPlaybackSnapshot() const
+juce::var GlacierRiserProcessor::getPlaybackSnapshot() const
 {
     auto* o = new juce::DynamicObject();
     const bool isRaw = activeSource.load() == (int) PlaySource::raw;
@@ -1415,5 +1417,5 @@ juce::var AtmosRiserProcessor::getPlaybackSnapshot() const
 //==============================================================================
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new AtmosRiserProcessor();
+    return new GlacierRiserProcessor();
 }

@@ -151,21 +151,21 @@ export const OpenFileIcon = (p: IconProps) => (
   </Svg>
 );
 
-/** Abstract circular sound-wave mark for the brand. */
+/** Path of the Glacier Riser mark (a spiral), in its own -60 -60 1173 1172 viewBox. */
+export const BRAND_MARK_PATH =
+  "M633 547C634 585 623 610 597 638C534 706 433 689 372 627C296 549 308 419 383 344C429 300 482 275 546 276C695 276 813 416 810 560C808 648 771 724 708 784C635 854 546 885 446 884C363 883 283 854 219 804C4 637 8 328 197 144C289 54 414 4 543 6C677 8 805 64 898 161C996 263 1049 391 1046 533C1043 668 987 797 890 891C781 996 639 1048 488 1038C436 1034 372 1022 323 1003L317 1001L317 999L326 1001C360 1007 390 1011 425 1012C535 1016 643 983 732 920C829 852 902 750 922 632C942 521 916 407 851 315C794 234 707 179 610 161C519 145 416 165 340 219C267 270 218 347 203 434C175 600 281 757 448 786C516 798 586 783 641 743C688 709 720 657 730 600C738 547 728 499 697 456C668 415 626 383 575 376C502 365 432 408 421 484C411 547 448 611 514 621C542 626 577 614 600 598C618 584 625 567 633 547Z";
+
+/** The Glacier Riser mark, filled with the theme's logo gradient (--logo-a / --logo-b). */
 export function BrandLogo({ size = 38 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
+    <svg width={size} height={size} viewBox="-60 -60 1173 1172" aria-hidden="true">
       <defs>
         <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" style={{ stopColor: "var(--logo-a)" }} />
           <stop offset="1" style={{ stopColor: "var(--logo-b)" }} />
         </linearGradient>
       </defs>
-      <g fill="none" stroke="url(#logoGrad)" strokeLinecap="round">
-        <path d="M24 5.5a18.5 18.5 0 1 1-17.6 12.8" strokeWidth="4.2" />
-        <path d="M24 13a11 11 0 1 0 10.5 7.7" strokeWidth="4.2" />
-        <path d="M24 20.2a3.8 3.8 0 1 1-3.6 2.6" strokeWidth="3.6" />
-      </g>
+      <path d={BRAND_MARK_PATH} fill="url(#logoGrad)" />
     </svg>
   );
 }

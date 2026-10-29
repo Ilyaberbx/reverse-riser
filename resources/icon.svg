@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Glacier Riser app icon: the brand mark in ice on a dark tile (used for the standalone .exe). -->
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c2a3e"/>
+      <stop offset="1" stop-color="#0b121c"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e4effb"/>
+      <stop offset="1" stop-color="#bcd6f5"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224" fill="url(#tile)"/>
+  <g transform="translate(198 198) scale(0.597)">
+    <path fill="url(#mark)" d="M633 547C634 585 623 610 597 638C534 706 433 689 372 627C296 549 308 419 383 344C429 300 482 275 546 276C695 276 813 416 810 560C808 648 771 724 708 784C635 854 546 885 446 884C363 883 283 854 219 804C4 637 8 328 197 144C289 54 414 4 543 6C677 8 805 64 898 161C996 263 1049 391 1046 533C1043 668 987 797 890 891C781 996 639 1048 488 1038C436 1034 372 1022 323 1003L317 1001L317 999L326 1001C360 1007 390 1011 425 1012C535 1016 643 983 732 920C829 852 902 750 922 632C942 521 916 407 851 315C794 234 707 179 610 161C519 145 416 165 340 219C267 270 218 347 203 434C175 600 281 757 448 786C516 798 586 783 641 743C688 709 720 657 730 600C738 547 728 499 697 456C668 415 626 383 575 376C502 365 432 408 421 484C411 547 448 611 514 621C542 626 577 614 600 598C618 584 625 567 633 547Z"/>
+  </g>
+</svg>

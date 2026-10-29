@@ -38,8 +38,8 @@
   --ice-c1: #d6eeff;
   --ice-c1-o: 0.8;
   --ice-edge: rgba(255, 255, 255, 0.75);
-  --logo-a: #1b3f6b;
-  --logo-b: #0a1f3b;
+  --logo-a: #2d5a99;   /* the mark's own navy (#1d3a6e), lit from the top left */
+  --logo-b: #1d3a6e;
 
   color-scheme: light;
 }

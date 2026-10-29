@@ -109,11 +109,11 @@ export const actions = {
 };
 
 export async function connect() {
-  backend.on("atmos:state", (state) => set({ state }));
-  backend.on("atmos:params", mergeParams);
-  backend.on("atmos:waveforms", (waveforms) => set({ waveforms }));
-  backend.on("atmos:playback", (playback) => set({ playback }));
-  backend.on("atmos:toast", (t) => showToast(t.text, t.error));
+  backend.on("glacier:state", (state) => set({ state }));
+  backend.on("glacier:params", mergeParams);
+  backend.on("glacier:waveforms", (waveforms) => set({ waveforms }));
+  backend.on("glacier:playback", (playback) => set({ playback }));
+  backend.on("glacier:toast", (t) => showToast(t.text, t.error));
 
   const initial = await backend.ready();
   set({ connected: true, ...initial });

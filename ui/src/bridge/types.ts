@@ -103,13 +103,13 @@ export interface InitialPayload {
 }
 
 export interface BackendEvents {
-  "atmos:state": PluginState;
-  "atmos:params": Params;
-  "atmos:waveforms": Waveforms;
-  "atmos:playback": Playback;
-  "atmos:toast": Toast;
+  "glacier:state": PluginState;
+  "glacier:params": Params;
+  "glacier:waveforms": Waveforms;
+  "glacier:playback": Playback;
+  "glacier:toast": Toast;
   /** The UI theme changed in another open instance. */
-  "atmos:theme": Theme;
+  "glacier:theme": Theme;
 }
 
 export type BackendEventName = keyof BackendEvents;

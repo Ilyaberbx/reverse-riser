@@ -5,7 +5,7 @@
 #include "BarAlignment.h"
 
 /**
-    AtmosRiser: listens to the track it sits on (or a dropped file), lets you pick a segment,
+    Glacier Riser: listens to the track it sits on (or a dropped file), lets you pick a segment,
     and renders a reverse-reverb swell that rises into it.
 
     Track workflow
@@ -24,13 +24,13 @@
         clip through a spin-lock protected shared_ptr.
       - The editor polls the version counters and snapshots, so nothing here knows about the UI.
 */
-class AtmosRiserProcessor : public juce::AudioProcessor,
+class GlacierRiserProcessor : public juce::AudioProcessor,
                             private juce::AudioProcessorValueTreeState::Listener,
                             private juce::Timer
 {
 public:
-    AtmosRiserProcessor();
-    ~AtmosRiserProcessor() override;
+    GlacierRiserProcessor();
+    ~GlacierRiserProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -56,7 +56,7 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    /** Lets VST3 hosts open AtmosRiser wherever a project used the plugins it replaces. */
+    /** Lets VST3 hosts open Glacier Riser wherever a project used the plugins it replaces. */
     juce::VST3ClientExtensions* getVST3ClientExtensions() override { return &vst3Extensions; }
 
     //==============================================================================
@@ -115,7 +115,7 @@ private:
     struct Vst3Extensions : public juce::VST3ClientExtensions
     {
         /** Class IDs of earlier plugins this one replaces (read from their moduleinfo.json).
-            "Reverse Reverb" (the first version of this plugin) already shares AtmosRiser's ID. */
+            "Reverse Reverb" (the first version of this plugin) already shares this plugin's ID (so does AtmosRiser, its former name). */
         std::vector<juce::String> getCompatibleClasses() const override
         {
             return { "ABCDEF019182FAEB496C6278546E726D" };   // Reverse Riser 0.0.1 (Ilbx / Tnrm)
@@ -226,5 +226,5 @@ private:
     bool hasPendingRestore = false;
     juce::ValueTree pendingState;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AtmosRiserProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlacierRiserProcessor)
 };

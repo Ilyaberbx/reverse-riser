@@ -100,7 +100,7 @@ export function createMockBackend(): Backend {
     bpm: 120,
     tailSeconds: 2,
     loop: false,
-    exportsFolder: "Documents\\AtmosRiser Exports",
+    exportsFolder: "Documents\\Glacier Riser Exports",
   };
 
   let editPeaks: number[] = [];
@@ -109,7 +109,7 @@ export function createMockBackend(): Backend {
     listeners.get(event)?.forEach((fn) => (fn as (p: BackendEvents[E]) => void)(payload));
   }
 
-  const toast = (text: string, error = false) => emit("atmos:toast", { text, error });
+  const toast = (text: string, error = false) => emit("glacier:toast", { text, error });
 
   function render() {
     if (!state.hasSource) {
@@ -173,8 +173,8 @@ export function createMockBackend(): Backend {
   const waveforms = (): Waveforms => ({ raw: rawPeaks, edit: editPeaks, version: waveformVersion });
 
   function publish(withWaveforms = true) {
-    emit("atmos:state", { ...state });
-    if (withWaveforms) emit("atmos:waveforms", waveforms());
+    emit("glacier:state", { ...state });
+    if (withWaveforms) emit("glacier:waveforms", waveforms());
   }
 
   let renderTimer: number | undefined;
@@ -188,13 +188,13 @@ export function createMockBackend(): Backend {
 
   function applyValues(values: Partial<Params>) {
     params = { ...DEFAULT_PARAMS, ...values };
-    emit("atmos:params", { ...params });
+    emit("glacier:params", { ...params });
   }
 
   function stopPlayback() {
     window.clearInterval(playTimer);
     playback = { ...playback, playing: false, position: 0 };
-    emit("atmos:playback", playback);
+    emit("glacier:playback", playback);
   }
 
   function clearSource() {
@@ -222,7 +222,7 @@ export function createMockBackend(): Backend {
         const word = (a: number, b: number) => (t > a && t < b ? Math.sin(((t - a) / (b - a)) * Math.PI) : 0);
         const level = (word(0.3, 0.8) + word(0.9, 1.6) * 0.8 + word(1.7, 2.5) * 0.9) * (0.7 + 0.3 * Math.random());
         playback = { ...playback, recording: true, hostPlaying: true, captureSeconds: Math.round(t * 10) / 10, level };
-        emit("atmos:playback", playback);
+        emit("glacier:playback", playback);
         return;
       }
       window.clearInterval(captureTimer);
@@ -237,7 +237,7 @@ export function createMockBackend(): Backend {
         sourceRate: 48000, capture: "armed", hasTimeline: true, selStart: 1.19, selEnd: 3.45,
       });
       playback = { ...playback, recording: false, hostPlaying: false, captureSeconds: 0, level: 0 };
-      emit("atmos:playback", playback);
+      emit("glacier:playback", playback);
       render();
       publish();
     }, 33);
@@ -265,10 +265,10 @@ export function createMockBackend(): Backend {
 
     setParam(id, value) {
       params = { ...params, [id]: value };
-      emit("atmos:params", { ...params });
+      emit("glacier:params", { ...params });
       if (!state.presetModified) {
         state.presetModified = true;
-        emit("atmos:state", { ...state });
+        emit("glacier:state", { ...state });
       }
       scheduleRender();
     },
@@ -287,7 +287,7 @@ export function createMockBackend(): Backend {
       if (length <= 0) return;
       playStartedAt = performance.now();
       playback = { ...playback, playing: true, source, position: 0 };
-      emit("atmos:playback", playback);
+      emit("glacier:playback", playback);
       playTimer = window.setInterval(() => {
         let pos = (performance.now() - playStartedAt) / 1000;
         if (pos >= length) {
@@ -296,7 +296,7 @@ export function createMockBackend(): Backend {
           pos = 0;
         }
         playback = { ...playback, position: pos };
-        emit("atmos:playback", playback);
+        emit("glacier:playback", playback);
       }, 33);
     },
     stop: stopPlayback,
@@ -310,7 +310,7 @@ export function createMockBackend(): Backend {
     reset() {
       stopPlayback();
       params = { ...params, lock: 0 };
-      emit("atmos:params", { ...params });
+      emit("glacier:params", { ...params });
       clearSource();
       publish();
       simulateDawPlayback();
@@ -359,7 +359,7 @@ export function createMockBackend(): Backend {
     openExportsFolder: () => toast(`Exports are saved to ${state.exportsFolder}`),
     setTheme: (theme) => {
       try {
-        localStorage.setItem("atmosriser.theme", theme);
+        localStorage.setItem("glacierriser.theme", theme);
       } catch {
         // storage unavailable: the choice lasts for this page only
       }

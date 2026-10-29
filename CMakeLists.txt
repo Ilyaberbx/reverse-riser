@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(AtmosRiser VERSION 2.0.0)
+project(GlacierRiser VERSION 2.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -63,25 +63,26 @@ add_custom_command(
     COMMAND "${NPM_EXECUTABLE}" run build
     WORKING_DIRECTORY "${UI_DIR}"
     DEPENDS ${UI_SOURCES}
-    COMMENT "Building the AtmosRiser web UI"
+    COMMENT "Building the Glacier Riser web UI"
     VERBATIM)
 
-add_custom_target(AtmosRiserUIBundle DEPENDS "${UI_BUNDLE}")
+add_custom_target(GlacierRiserUIBundle DEPENDS "${UI_BUNDLE}")
 
-juce_add_binary_data(AtmosRiserUIData
-    HEADER_NAME AtmosRiserUIData.h
-    NAMESPACE AtmosRiserUIData
+juce_add_binary_data(GlacierRiserUIData
+    HEADER_NAME GlacierRiserUIData.h
+    NAMESPACE GlacierRiserUIData
     SOURCES "${UI_BUNDLE}")
 
-add_dependencies(AtmosRiserUIData AtmosRiserUIBundle)
+add_dependencies(GlacierRiserUIData GlacierRiserUIBundle)
 
 # ------------------------------------------------------------------------------
-juce_add_plugin(AtmosRiser
+juce_add_plugin(GlacierRiser
     COMPANY_NAME "Mykhailo Nosenko"
     PLUGIN_MANUFACTURER_CODE Mnos
     PLUGIN_CODE Rvrb
     FORMATS VST3 Standalone
-    PRODUCT_NAME "AtmosRiser"
+    PRODUCT_NAME "Glacier Riser"
+    ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.svg"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT FALSE
@@ -90,21 +91,21 @@ juce_add_plugin(AtmosRiser
     VST3_CATEGORIES Fx Reverb
     COPY_PLUGIN_AFTER_BUILD FALSE)
 
-target_sources(AtmosRiser PRIVATE
+target_sources(GlacierRiser PRIVATE
     Source/ReverseReverbRenderer.cpp
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp)
 
-target_compile_definitions(AtmosRiser PUBLIC
+target_compile_definitions(GlacierRiser PUBLIC
     JUCE_WEB_BROWSER=1
     JUCE_USE_WIN_WEBVIEW2_WITH_STATIC_LINKING=1
     JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0
     JUCE_DISPLAY_SPLASH_SCREEN=0)
 
-target_link_libraries(AtmosRiser
+target_link_libraries(GlacierRiser
     PRIVATE
-        AtmosRiserUIData
+        GlacierRiserUIData
         juce::juce_audio_utils
     PUBLIC
         juce::juce_recommended_config_flags
@@ -113,24 +114,24 @@ target_link_libraries(AtmosRiser
 
 # ------------------------------------------------------------------------------
 # Optional end-to-end check: hosts the built VST3 like a DAW (capture, then in-sync playback).
-#   cmake --build build --config Release --target AtmosRiserHostCheck
-#   build/AtmosRiserHostCheck_artefacts/Release/AtmosRiserHostCheck.exe build/AtmosRiser_artefacts/Release/VST3/AtmosRiser.vst3
-juce_add_console_app(AtmosRiserHostCheck PRODUCT_NAME "AtmosRiserHostCheck")
+#   cmake --build build --config Release --target GlacierRiserHostCheck
+#   build/GlacierRiserHostCheck_artefacts/Release/GlacierRiserHostCheck.exe build/GlacierRiser_artefacts/Release/"VST3/Glacier Riser.vst3"
+juce_add_console_app(GlacierRiserHostCheck PRODUCT_NAME "GlacierRiserHostCheck")
 
-target_sources(AtmosRiserHostCheck PRIVATE
+target_sources(GlacierRiserHostCheck PRIVATE
     tests/HostCheck.cpp
     Source/ReverseReverbRenderer.cpp)
 
-target_compile_definitions(AtmosRiserHostCheck PRIVATE
+target_compile_definitions(GlacierRiserHostCheck PRIVATE
     JUCE_PLUGINHOST_VST3=1
     JUCE_MODAL_LOOPS_PERMITTED=1
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0)
 
-target_link_libraries(AtmosRiserHostCheck PRIVATE
+target_link_libraries(GlacierRiserHostCheck PRIVATE
     juce::juce_audio_processors
     juce::juce_audio_formats
     juce::juce_gui_basics
     juce::juce_recommended_config_flags)
 
-set_target_properties(AtmosRiserHostCheck PROPERTIES EXCLUDE_FROM_ALL TRUE)
+set_target_properties(GlacierRiserHostCheck PROPERTIES EXCLUDE_FROM_ALL TRUE)

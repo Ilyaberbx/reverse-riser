@@ -229,7 +229,7 @@ export function PluginHeader() {
       <div className="header__brand">
         <BrandLogo size={40} />
         <span className="wordmark">
-          <span className="wordmark__light">ATMOS</span>
+          <span className="wordmark__light">GLACIER</span>
           <span className="wordmark__bold">RISER</span>
         </span>
       </div>

@@ -14,7 +14,7 @@ function initialTheme(): Theme {
   const injected = window.__JUCE__?.initialisationData?.theme?.[0];
   if (isTheme(injected)) return injected;
   try {
-    const stored = localStorage.getItem("atmosriser.theme");
+    const stored = localStorage.getItem("glacierriser.theme");
     if (isTheme(stored)) return stored;
   } catch {
     // storage unavailable
@@ -40,7 +40,7 @@ function apply(theme: Theme, animate: boolean) {
 /** Sets the theme on the page before the first render, and follows other instances afterwards. */
 export function initTheme() {
   document.documentElement.dataset.theme = current;
-  backend.on("atmos:theme", (theme) => {
+  backend.on("glacier:theme", (theme) => {
     if (isTheme(theme)) apply(theme, true);
   });
 }
