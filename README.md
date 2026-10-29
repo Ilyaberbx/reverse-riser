@@ -98,6 +98,7 @@ rescanning plugins in your DAW.
 | **Level** (right, below Fade) | Output level of the swell, -24 to +6 dB. |
 | **LOCK** | Keeps the current take when the DAW plays. |
 | **Reverse orb** | Musical length of the swell: 1/8 bar to 8 bars, following the host tempo and time signature (120 BPM in the standalone app). |
+| **Sun / moon** (header) | Switches between the light and dark theme. It is a look only: saved once for every instance in `%APPDATA%\AtmosRiser\ui-settings.xml`, and never part of presets, undo, automation or the DAW project. |
 | Presets | Seven factory presets. **Save** stores your own in `%APPDATA%\AtmosRiser\Presets`. |
 | Menu | Load audio, Export WAV, open the exports folder, and **Include original after the swell** (off by default: the clip is the swell alone and ends where the phrase begins). |
 
@@ -145,11 +146,14 @@ Source/                     C++ plugin
   ReverseReverbRenderer.*   offline DSP: segment -> reverse -> diffuse -> reverb -> reverse -> colour
   PluginProcessor.*         parameters, presets, tempo sync, playback, state, UI snapshots
   PluginEditor.*            WebView2 host and the JS <-> C++ bridge
+  UiSettings.h              per-user UI preferences (theme), shared by all instances
 ui/                         web interface (React + TypeScript + Vite)
   src/bridge/               backend contract, JUCE implementation, browser mock
   src/components/           PluginHeader, WaveformDisplay, ReverseOrb, RotaryKnob,
                             ParameterPanel, EffectModeSelector, IconButton, icons
   src/styles/               tokens.css, layout.css, components.css
+  src/styles/themes/        light.css (the original look), dark.css (dark-only overrides)
+  src/theme.ts              theme state and the switch, kept out of the parameter store
 third_party/webview2/       WebView2 SDK headers and static loader
 ```
 

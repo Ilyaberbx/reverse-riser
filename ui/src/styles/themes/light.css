@@ -1,0 +1,45 @@
+/* Light "Frost" theme: the original look. components.css and layout.css are written for it. */
+:root,
+:root[data-theme="light"] {
+  --bg-deep: #071526;
+  --bg-navy: #0b2542;
+  --bg-waveform: #0a2441;
+
+  --surface-glass: rgba(225, 241, 255, 0.82);
+  --surface-glass-light: rgba(242, 249, 255, 0.92);
+
+  --blue-primary: #1688ff;
+  --blue-bright: #39a9ff;
+  --cyan-highlight: #a7f0ff;
+
+  --text-primary: #102d52;
+  --text-secondary: #496987;
+  --text-on-dark: #dff2ff;
+
+  --border-light: rgba(255, 255, 255, 0.85);
+  --border-blue: rgba(75, 161, 255, 0.45);
+
+  --shadow-blue: rgba(30, 137, 255, 0.28);
+  --shadow-deep: rgba(2, 10, 26, 0.55);
+
+  /* Ice shards and brand mark (IceDecor.tsx, BrandLogo). */
+  --ice-a0: #ffffff;
+  --ice-a0-o: 0.95;
+  --ice-a1: #bfe2ff;
+  --ice-a1-o: 0.55;
+  --ice-a2: #3b8fe6;
+  --ice-a2-o: 0.55;
+  --ice-b0: #e9f6ff;
+  --ice-b0-o: 0.85;
+  --ice-b1: #5aa8f0;
+  --ice-b1-o: 0.45;
+  --ice-c0: #1b5fae;
+  --ice-c0-o: 0.6;
+  --ice-c1: #d6eeff;
+  --ice-c1-o: 0.8;
+  --ice-edge: rgba(255, 255, 255, 0.75);
+  --logo-a: #1b3f6b;
+  --logo-b: #0a1f3b;
+
+  color-scheme: light;
+}

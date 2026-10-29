@@ -37,27 +37,32 @@ function Shard({ x, y, scale = 1, rotate = 0, variant = 0, opacity = 0.9 }: Shar
   return (
     <g transform={`translate(${x} ${y}) rotate(${rotate}) scale(${scale})`} opacity={opacity}>
       {SHAPES[variant].map(([points, fill], i) => (
-        <polygon key={i} points={points} fill={`url(#${fill})`} stroke="rgba(255,255,255,0.75)" strokeWidth={0.6 / scale} />
+        <polygon key={i} points={points} fill={`url(#${fill})`} style={{ stroke: "var(--ice-edge)" }} strokeWidth={0.6 / scale} />
       ))}
     </g>
   );
 }
 
+/** A gradient stop coloured by the theme (--ice-* tokens in styles/themes). */
+const Stop = ({ at, token }: { at: number; token: string }) => (
+  <stop offset={at} style={{ stopColor: `var(--ice-${token})`, stopOpacity: `var(--ice-${token}-o)` }} />
+);
+
 function Defs() {
   return (
     <defs>
       <linearGradient id="iceA" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stopColor="#ffffff" stopOpacity="0.95" />
-        <stop offset="0.55" stopColor="#bfe2ff" stopOpacity="0.55" />
-        <stop offset="1" stopColor="#3b8fe6" stopOpacity="0.55" />
+        <Stop at={0} token="a0" />
+        <Stop at={0.55} token="a1" />
+        <Stop at={1} token="a2" />
       </linearGradient>
       <linearGradient id="iceB" x1="1" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#e9f6ff" stopOpacity="0.85" />
-        <stop offset="1" stopColor="#5aa8f0" stopOpacity="0.45" />
+        <Stop at={0} token="b0" />
+        <Stop at={1} token="b1" />
       </linearGradient>
       <linearGradient id="iceC" x1="0" y1="1" x2="1" y2="0">
-        <stop offset="0" stopColor="#1b5fae" stopOpacity="0.6" />
-        <stop offset="1" stopColor="#d6eeff" stopOpacity="0.8" />
+        <Stop at={0} token="c0" />
+        <Stop at={1} token="c1" />
       </linearGradient>
       <filter id="frostNoise" x="0" y="0" width="100%" height="100%">
         <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4" />

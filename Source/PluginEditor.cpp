@@ -101,6 +101,7 @@ juce::WebBrowserComponent::Options AtmosRiserEditor::createBrowserOptions()
         .withKeepPageLoadedWhenBrowserIsHidden()
         .withNativeIntegrationEnabled()
         .withResourceProvider ([] (const juce::String& url) { return serveResource (url); })
+        .withInitialisationData ("theme", UiSettings::getTheme())
 
         .withNativeFunction ("ready", [this] (const Args&, Completion done)
         {
@@ -173,6 +174,11 @@ juce::WebBrowserComponent::Options AtmosRiserEditor::createBrowserOptions()
             auto dir = processor.getExportsDirectory();
             dir.createDirectory();
             dir.startAsProcess();
+            done (true);
+        })
+        .withNativeFunction ("setTheme", [] (const Args& args, Completion done)
+        {
+            UiSettings::setTheme (argString (args, 0));
             done (true);
         })
         .withNativeFunction ("startDragOut", [this] (const Args&, Completion done)
@@ -269,6 +275,13 @@ void AtmosRiserEditor::timerCallback()
     {
         lastWaveformVersion = v;
         emit ("atmos:waveforms", processor.getWaveformSnapshot());
+    }
+
+    // The theme is shared by every instance: follow a change made in another editor.
+    if (const int v = UiSettings::themeVersion.load(); v != lastThemeVersion)
+    {
+        lastThemeVersion = v;
+        emit ("atmos:theme", UiSettings::getTheme());
     }
 
     if (const int v = processor.getNoticeVersion(); v != lastNoticeVersion)

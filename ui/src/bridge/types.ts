@@ -87,6 +87,9 @@ export interface Toast {
   error: boolean;
 }
 
+/** UI look. A per-user preference, not a parameter: never part of presets, undo or the project. */
+export type Theme = "light" | "dark";
+
 export interface Result {
   ok: boolean;
   message: string;
@@ -105,6 +108,8 @@ export interface BackendEvents {
   "atmos:waveforms": Waveforms;
   "atmos:playback": Playback;
   "atmos:toast": Toast;
+  /** The UI theme changed in another open instance. */
+  "atmos:theme": Theme;
 }
 
 export type BackendEventName = keyof BackendEvents;
@@ -133,4 +138,7 @@ export interface Backend {
   openExportsFolder(): void;
   startDragOut(): Promise<Result>;
   loadAudioFile(file: File): Promise<Result>;
+
+  /** Saves the UI theme for every instance of the plugin. */
+  setTheme(theme: Theme): void;
 }

@@ -357,6 +357,13 @@ export function createMockBackend(): Backend {
     },
     exportWav: () => toast("Export writes a WAV inside the plugin. This browser preview has no audio engine."),
     openExportsFolder: () => toast(`Exports are saved to ${state.exportsFolder}`),
+    setTheme: (theme) => {
+      try {
+        localStorage.setItem("atmosriser.theme", theme);
+      } catch {
+        // storage unavailable: the choice lasts for this page only
+      }
+    },
     startDragOut: async () => ({ ok: false, message: "Drag into your DAW works inside the plugin." }),
 
     async loadAudioFile(file) {

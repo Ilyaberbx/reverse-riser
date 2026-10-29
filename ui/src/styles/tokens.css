@@ -1,25 +1,5 @@
+/* Theme-independent tokens. Colours live in themes/light.css and themes/dark.css. */
 :root {
-  --bg-deep: #071526;
-  --bg-navy: #0b2542;
-  --bg-waveform: #0a2441;
-
-  --surface-glass: rgba(225, 241, 255, 0.82);
-  --surface-glass-light: rgba(242, 249, 255, 0.92);
-
-  --blue-primary: #1688ff;
-  --blue-bright: #39a9ff;
-  --cyan-highlight: #a7f0ff;
-
-  --text-primary: #102d52;
-  --text-secondary: #496987;
-  --text-on-dark: #dff2ff;
-
-  --border-light: rgba(255, 255, 255, 0.85);
-  --border-blue: rgba(75, 161, 255, 0.45);
-
-  --shadow-blue: rgba(30, 137, 255, 0.28);
-  --shadow-deep: rgba(2, 10, 26, 0.55);
-
   --radius-panel: 24px;
   --radius-card: 18px;
   --radius-control: 10px;
@@ -29,4 +9,11 @@
   --t-med: 220ms;
 
   --font: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+/* Switching theme crossfades the whole page (View Transitions), see theme.ts. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 260ms;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
 }

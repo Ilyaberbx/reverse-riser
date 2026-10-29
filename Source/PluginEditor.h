@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "UiSettings.h"
 
 /**
     Hosts the ATMOSRISER web UI (ui/ -> bundled into a single index.html) inside a WebView2
@@ -10,9 +11,10 @@
       Native functions (JS -> C++, each returns a promise):
         ready, setParam, beginGesture, endGesture, setSelection, play, stop, setLoop, reset,
         loadPreset, savePreset, openFile, exportWav, openExportsFolder,
-        startDragOut, loadAudioData
+        startDragOut, loadAudioData, setTheme
       Events (C++ -> JS):
-        atmos:state, atmos:params, atmos:waveforms, atmos:playback, atmos:toast
+        atmos:state, atmos:params, atmos:waveforms, atmos:playback, atmos:toast, atmos:theme
+      Initialisation data: theme (the saved UI theme, applied before the page draws)
 */
 class AtmosRiserEditor : public juce::AudioProcessorEditor,
                          private juce::Timer
@@ -47,6 +49,7 @@ private:
 
     bool pageReady = false;
     int lastStateVersion = -1, lastWaveformVersion = -1, lastNoticeVersion = 0;
+    int lastThemeVersion = UiSettings::themeVersion.load();
     juce::String lastParamsJson, lastPlaybackJson;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AtmosRiserEditor)

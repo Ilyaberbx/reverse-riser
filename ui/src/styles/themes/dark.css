@@ -1,0 +1,295 @@
+/*
+    Dark "Night Ice" theme. Same layout and controls as the light theme: it only redefines the
+    colour tokens and recolours the surfaces that were drawn for a light panel. Everything that is
+    already dark (waveform screen, effect bar, orb well and vortex) keeps its look.
+    Rules are scoped to :root[data-theme="dark"], so the light theme is never affected.
+*/
+:root[data-theme="dark"] {
+  --bg-deep: #050c17;
+  --bg-navy: #081a30;
+
+  --blue-primary: #2f9bff;
+  --blue-bright: #39a9ff;
+  --cyan-highlight: #a7f0ff;
+  --ice-accent: #6fd0ff;            /* accent text on dark glass */
+
+  --text-primary: #dff2ff;
+  --text-secondary: #86a6c4;
+  --text-on-dark: #dff2ff;
+
+  --border-light: rgba(167, 240, 255, 0.2);
+  --border-blue: rgba(75, 161, 255, 0.4);
+
+  --shadow-blue: rgba(30, 137, 255, 0.4);
+  --shadow-deep: rgba(0, 0, 0, 0.7);
+
+  /* Dark smoked glass for controls on the panel. */
+  --glass-bg: linear-gradient(180deg, rgba(28, 52, 84, 0.92), rgba(13, 29, 51, 0.92));
+  --glass-border: rgba(167, 240, 255, 0.16);
+  --glass-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(200, 240, 255, 0.12);
+
+  /* Ice at night: translucent deep-blue shards lit at their edges. */
+  --ice-a0: #c9eeff;
+  --ice-a0-o: 0.5;
+  --ice-a1: #3f95e6;
+  --ice-a1-o: 0.28;
+  --ice-a2: #0b2d5c;
+  --ice-a2-o: 0.5;
+  --ice-b0: #a7e4ff;
+  --ice-b0-o: 0.38;
+  --ice-b1: #16508f;
+  --ice-b1-o: 0.32;
+  --ice-c0: #061a38;
+  --ice-c0-o: 0.6;
+  --ice-c1: #8fd6ff;
+  --ice-c1-o: 0.42;
+  --ice-edge: rgba(167, 240, 255, 0.5);
+  --logo-a: #d6f3ff;
+  --logo-b: #4fb2ff;
+
+  color-scheme: dark;
+}
+
+/* Page and panel ---------------------------------------------------------------------- */
+
+:root[data-theme="dark"] .viewport {
+  background: radial-gradient(ellipse at 50% 40%, #0a1b31 0%, #050c17 60%, #02060d 100%);
+}
+
+:root[data-theme="dark"] .backdrop {
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 45%, rgba(57, 169, 255, 0.16), transparent 70%),
+    linear-gradient(160deg, #081a30 0%, #040b16 55%, #02060c 100%);
+}
+
+:root[data-theme="dark"] .panel {
+  background:
+    radial-gradient(ellipse 50% 40% at 50% 62%, rgba(57, 169, 255, 0.17), transparent 70%),
+    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(167, 240, 255, 0.07), transparent 70%),
+    linear-gradient(180deg, #10223b 0%, #0a172b 48%, #060f1d 100%);
+  border: 1px solid rgba(167, 240, 255, 0.18);
+  box-shadow:
+    0 28px 60px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(57, 169, 255, 0.22),
+    inset 0 1px 0 rgba(200, 240, 255, 0.2),
+    inset 0 -18px 40px rgba(57, 140, 230, 0.08);
+}
+
+/* Header ------------------------------------------------------------------------------- */
+
+:root[data-theme="dark"] .header {
+  background: linear-gradient(180deg, rgba(22, 44, 72, 0.72), rgba(12, 26, 46, 0.3));
+  border-bottom: 1px solid rgba(167, 240, 255, 0.1);
+}
+
+:root[data-theme="dark"] .wordmark__light {
+  color: #7fa3c6;
+}
+
+:root[data-theme="dark"] .wordmark__bold {
+  color: #e6f6ff;
+  text-shadow: 0 0 14px rgba(120, 210, 255, 0.35);
+}
+
+:root[data-theme="dark"] .icon-button {
+  border-color: var(--glass-border);
+  background: var(--glass-bg);
+  box-shadow: var(--glass-shadow);
+}
+
+:root[data-theme="dark"] .icon-button:hover {
+  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.2), 0 0 14px rgba(57, 169, 255, 0.25), var(--glass-shadow);
+}
+
+:root[data-theme="dark"] .icon-button.is-active {
+  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.3), 0 0 16px rgba(57, 169, 255, 0.3);
+}
+
+:root[data-theme="dark"] .header__ghost .icon-button,
+:root[data-theme="dark"] .menu .icon-button {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .header__ghost .icon-button:hover,
+:root[data-theme="dark"] .menu .icon-button:hover,
+:root[data-theme="dark"] .menu .icon-button.is-active {
+  background: rgba(167, 240, 255, 0.08);
+  box-shadow: 0 0 0 1px rgba(167, 240, 255, 0.14);
+}
+
+:root[data-theme="dark"] .preset__field {
+  border-color: var(--glass-border);
+  background: var(--glass-bg);
+  box-shadow: var(--glass-shadow);
+}
+
+:root[data-theme="dark"] .preset__nav {
+  border-left-color: rgba(167, 240, 255, 0.12);
+}
+
+:root[data-theme="dark"] .preset__name:hover,
+:root[data-theme="dark"] .preset__nav:hover {
+  background: rgba(57, 169, 255, 0.14);
+}
+
+:root[data-theme="dark"] .preset__nav:active {
+  background: rgba(57, 169, 255, 0.24);
+}
+
+:root[data-theme="dark"] .preset__modified {
+  color: var(--ice-accent);
+}
+
+/* Popovers, dialog, toast --------------------------------------------------------------- */
+
+:root[data-theme="dark"] .popover {
+  border-color: rgba(167, 240, 255, 0.18);
+  background: rgba(10, 23, 42, 0.97);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(57, 169, 255, 0.14), 0 0 24px rgba(57, 169, 255, 0.12);
+}
+
+:root[data-theme="dark"] .popover__item:hover,
+:root[data-theme="dark"] .popover__item:focus-visible {
+  background: rgba(57, 169, 255, 0.16);
+}
+
+:root[data-theme="dark"] .popover__item.is-current {
+  color: var(--ice-accent);
+}
+
+:root[data-theme="dark"] .popover__divider {
+  background: rgba(167, 240, 255, 0.1);
+}
+
+:root[data-theme="dark"] .checkbox:not(.is-checked) {
+  border-color: rgba(167, 240, 255, 0.4);
+}
+
+:root[data-theme="dark"] .dialog-backdrop {
+  background: rgba(0, 4, 10, 0.55);
+}
+
+:root[data-theme="dark"] .dialog {
+  border-color: rgba(167, 240, 255, 0.2);
+  background: linear-gradient(180deg, #12263f, #0a172b);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 30px rgba(57, 169, 255, 0.14);
+}
+
+:root[data-theme="dark"] .dialog__input {
+  border-color: rgba(167, 240, 255, 0.2);
+  background: #071325;
+}
+
+:root[data-theme="dark"] .dialog__error {
+  color: #ff8fa0;
+}
+
+:root[data-theme="dark"] .text-button:not(.is-primary) {
+  border-color: rgba(167, 240, 255, 0.18);
+  background: rgba(30, 54, 86, 0.6);
+}
+
+:root[data-theme="dark"] .text-button:not(.is-primary):hover {
+  background: rgba(42, 72, 110, 0.85);
+}
+
+:root[data-theme="dark"] .toast {
+  background: rgba(4, 12, 24, 0.92);
+}
+
+/* Waveform: deepened a touch so the screen still reads as inset on the dark panel. */
+
+:root[data-theme="dark"] .waveform {
+  background:
+    radial-gradient(ellipse 45% 70% at 78% 45%, rgba(57, 169, 255, 0.2), transparent 70%),
+    linear-gradient(180deg, #06172b 0%, #0a2543 60%, #0d2e51 100%);
+}
+
+/* Knobs ---------------------------------------------------------------------------------- */
+
+:root[data-theme="dark"] .knob__track {
+  stroke: rgba(167, 240, 255, 0.12);
+}
+
+/* Dark ice-steel cap instead of bright silver. */
+:root[data-theme="dark"] .knob__cap {
+  background:
+    radial-gradient(circle at 38% 30%, rgba(200, 236, 255, 0.42), rgba(200, 236, 255, 0) 45%),
+    conic-gradient(from 0deg, #5f7893, #22354b 11%, #506984 24%, #1e2f44 37%, #5a728c 50%, #22344a 62%, #4d6581 75%, #1f3046 88%, #5f7893);
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.5), inset 0 2px 2px rgba(200, 240, 255, 0.35);
+}
+
+:root[data-theme="dark"] .knob__pointer {
+  background: #bff3ff;
+  box-shadow: 0 0 6px rgba(120, 220, 255, 0.9);
+}
+
+/* Orb ------------------------------------------------------------------------------------ */
+
+:root[data-theme="dark"] .orb__glow {
+  background: radial-gradient(circle, rgba(57, 169, 255, 0.5) 30%, rgba(57, 169, 255, 0.14) 55%, transparent 70%);
+}
+
+:root[data-theme="dark"] .orb-scale-line {
+  stroke: rgba(167, 240, 255, 0.1);
+}
+
+:root[data-theme="dark"] .orb-tick:not(.is-lit) {
+  fill: rgba(167, 240, 255, 0.22);
+}
+
+:root[data-theme="dark"] .orb-step:not(.is-lit) {
+  fill: rgba(167, 240, 255, 0.3);
+}
+
+/* Graphite chrome bezel with cold highlights. */
+:root[data-theme="dark"] .orb__metal {
+  background:
+    radial-gradient(circle at 35% 25%, rgba(210, 240, 255, 0.5), rgba(210, 240, 255, 0) 40%),
+    conic-gradient(from 20deg, #6d849c, #22344a 10%, #58728e 22%, #1b2b3f 35%, #67809a 48%, #22354b 60%, #516b88 74%, #1d2e43 87%, #6d849c);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.6), 0 0 26px rgba(57, 169, 255, 0.2), inset 0 2px 3px rgba(210, 240, 255, 0.5),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="dark"] .orb__control:focus-visible .orb__metal {
+  box-shadow: 0 0 0 3px rgba(57, 169, 255, 0.7), 0 14px 36px rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme="dark"] .orb__label-value {
+  color: var(--ice-accent);
+  text-shadow: 0 0 10px rgba(80, 190, 255, 0.45);
+}
+
+/* Effect bar and flyout -------------------------------------------------------------------- */
+
+:root[data-theme="dark"] .mode-selector {
+  border-color: rgba(110, 190, 255, 0.3);
+  background:
+    radial-gradient(ellipse 60% 120% at 50% 120%, rgba(57, 169, 255, 0.18), transparent 70%),
+    linear-gradient(180deg, #0a1f38 0%, #061426 100%);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(167, 240, 255, 0.16),
+    inset 0 -10px 20px rgba(2, 10, 26, 0.35);
+}
+
+:root[data-theme="dark"] .mode-flyout {
+  border-color: rgba(167, 240, 255, 0.2);
+  background: linear-gradient(180deg, rgba(20, 40, 68, 0.98), rgba(10, 22, 40, 0.98));
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(57, 169, 255, 0.2), 0 0 22px rgba(57, 169, 255, 0.16);
+}
+
+:root[data-theme="dark"] .mode-flyout::after {
+  background: rgba(10, 22, 40, 0.98);
+  border-right-color: rgba(167, 240, 255, 0.2);
+  border-bottom-color: rgba(167, 240, 255, 0.2);
+}
+
+:root[data-theme="dark"] .hslider__track {
+  background: rgba(167, 240, 255, 0.12);
+}
+
+:root[data-theme="dark"] .hslider__thumb {
+  background: radial-gradient(circle at 40% 35%, #effbff, #8fb4d6);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), 0 0 8px rgba(57, 169, 255, 0.55);
+}

@@ -95,6 +95,19 @@ export const MenuIcon = (p: IconProps) => (
   </Svg>
 );
 
+export const MoonIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
+  </Svg>
+);
+
+export const SunIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" />
+  </Svg>
+);
+
 export const HeadphonesIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="M3.5 17v-4.5a8.5 8.5 0 0 1 17 0V17" />
@@ -144,8 +157,8 @@ export function BrandLogo({ size = 38 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
       <defs>
         <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#1b3f6b" />
-          <stop offset="1" stopColor="#0a1f3b" />
+          <stop offset="0" style={{ stopColor: "var(--logo-a)" }} />
+          <stop offset="1" style={{ stopColor: "var(--logo-b)" }} />
         </linearGradient>
       </defs>
       <g fill="none" stroke="url(#logoGrad)" strokeLinecap="round">
