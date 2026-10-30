@@ -28,6 +28,14 @@ Dragged and exported clips start exactly on a bar line (padded with silence), an
 says which bar to drop them on, e.g. `track_drop-on-bar-16_glacier-riser.wav`. With grid snapping on,
 the swell lands sample-accurately in front of the phrase.
 
+The file is also padded at the end to a whole power-of-two number of bars (1, 2, 4, 8 or 16) and
+carries an ACID tempo chunk. Ableton guesses a dropped file's tempo from its length, so a whole
+number of bars makes it play at the project tempo, unstretched. Drop the clip on its own audio
+track: the trailing silence would replace the vocal on the same track.
+
+Insert Glacier Riser first on the vocal track. It captures whatever reaches its slot, so placed
+after other effects it records them, and the dropped clip would then be processed by them twice.
+
 Adjust the phrase in **RAW** view (drag to select, drag the handles). Takes are saved in
 `%APPDATA%\AtmosRiser\Captures` (one file per instance; older takes from the same session are
 deleted), so reopening the project restores the last one.

@@ -138,7 +138,8 @@ namespace
         return true;
     }
 
-    bool writeWav (const juce::File& file, const juce::AudioBuffer<float>& buffer, double rate)
+    bool writeWav (const juce::File& file, const juce::AudioBuffer<float>& buffer, double rate,
+                   const juce::StringPairArray& metadata = {})
     {
         file.getParentDirectory().createDirectory();
         file.deleteFile();
@@ -149,7 +150,7 @@ namespace
 
         juce::WavAudioFormat wav;
         std::unique_ptr<juce::AudioFormatWriter> writer (wav.createWriterFor (stream.get(), rate,
-                                                                              (unsigned int) buffer.getNumChannels(), 24, {}, 0));
+                                                                              (unsigned int) buffer.getNumChannels(), 24, metadata, 0));
         if (writer == nullptr)
             return false;
 
@@ -1290,16 +1291,33 @@ bool GlacierRiserProcessor::exportRenderedToFile (const juce::File& file, juce::
         return false;
     }
 
-    // Pad the front with silence so the clip starts exactly on a bar line.
-    const auto align = getExportAlignment();
-    const int pad = align.valid ? juce::jmax (0, align.padSamples) : 0;
-    juce::AudioBuffer<float> padded (clip->buffer.getNumChannels(), clip->buffer.getNumSamples() + pad);
+    // Silence in front puts the clip on a bar line; silence after it makes the file a whole
+    // power-of-two number of bars, so a DAW that infers tempo from length plays it unstretched.
+    const double bpm = juce::jlimit (20.0, 400.0, hostBpm.load());
+    const int numerator = timeSigNumerator.load(), denominator = timeSigDenominator.load();
+    const double beatsPerBar = numerator * 4.0 / (double) denominator;
+    const auto layout = layoutExport (clip->buffer.getNumSamples(), getExportAlignment(), bpm, beatsPerBar, clip->sampleRate);
+
+    juce::AudioBuffer<float> padded (clip->buffer.getNumChannels(), layout.totalSamples);
     padded.clear();
 
     for (int ch = 0; ch < padded.getNumChannels(); ++ch)
-        padded.copyFrom (ch, pad, clip->buffer, ch, 0, clip->buffer.getNumSamples());
+        padded.copyFrom (ch, layout.padStart, clip->buffer, ch, 0, clip->buffer.getNumSamples());
 
-    if (! writeWav (file, padded, clip->sampleRate))
+    // ACID tempo chunk: DAWs that read it (FL Studio, Cubase, Reaper, ...) get the tempo directly.
+    juce::StringPairArray metadata;
+    metadata.set (juce::WavAudioFormat::acidOneShot, "0");
+    metadata.set (juce::WavAudioFormat::acidRootSet, "0");
+    metadata.set (juce::WavAudioFormat::acidStretch, "1");
+    metadata.set (juce::WavAudioFormat::acidDiskBased, "0");
+    metadata.set (juce::WavAudioFormat::acidizerFlag, "0");
+    metadata.set (juce::WavAudioFormat::acidRootNote, "60");
+    metadata.set (juce::WavAudioFormat::acidBeats, juce::String (juce::roundToInt (layout.bars * beatsPerBar)));
+    metadata.set (juce::WavAudioFormat::acidNumerator, juce::String (numerator));
+    metadata.set (juce::WavAudioFormat::acidDenominator, juce::String (denominator));
+    metadata.set (juce::WavAudioFormat::acidTempo, juce::String (bpm, 3));
+
+    if (! writeWav (file, padded, clip->sampleRate, metadata))
     {
         errorMessage = "Could not write " + file.getFullPathName();
         return false;

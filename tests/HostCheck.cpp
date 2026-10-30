@@ -11,6 +11,7 @@
 #include <juce_audio_formats/juce_audio_formats.h>
 #include "../Source/ReverseReverbRenderer.h"
 #include "../Source/BarAlignment.h"
+#include "../Source/ExportLayout.h"
 
 namespace
 {
@@ -122,6 +123,40 @@ int main (int argc, char** argv)
                   << b.bar << ", pad " << b.padSamples << std::endl;
         check (a.valid && a.bar == 9 && a.padSamples == 36000, "a clip mid-bar is padded back to its bar line");
         check (b.valid && b.bar == 9 && b.padSamples == 0, "a clip already on a bar line gets no padding");
+    }
+
+    //-- Exported file length: DAWs infer a dropped file's tempo from its length -----------------
+    // Ableton's auto-warp guesses how many bars a short file spans from its length and the song
+    // tempo. A file that is not a whole (power-of-two) number of bars gets a wrong guess and is
+    // time-stretched: off tempo, with warp artefacts.
+    std::cout << "Exported file length" << std::endl;
+    {
+        const double beatsPerBar = 4.0;
+        const double samplesPerBar = beatsPerBar * 60.0 / bpm * sr;
+        const int preDelay = (int) std::lround (0.020 * sr);
+        bool allWhole = true, allContain = true;
+
+        for (const double swellBars : { 0.125, 1.0, 4.0, 8.0 })
+            for (const double phrasePpq : { 33.5, 32.0, 17.25 })
+            {
+                const int clip = (int) std::lround (swellBars * samplesPerBar);   // swell-only clip
+                const int originalStart = clip + preDelay;
+                const double clipStartPpq = phrasePpq - originalStart / sr * bpm / 60.0;
+                const auto layout = layoutExport (clip, alignToBar (clipStartPpq, bpm, beatsPerBar, sr), bpm, beatsPerBar, sr);
+
+                const double whole = std::round (layout.bars);
+                const bool powerOfTwo = whole >= 1.0 && std::fmod (std::log2 (whole), 1.0) == 0.0;
+                const bool isWhole = std::abs (layout.bars - whole) * samplesPerBar < 1.0 && powerOfTwo;
+                allWhole &= isWhole;
+                allContain &= layout.padStart + clip <= layout.totalSamples;
+
+                if (! isWhole)
+                    std::cout << "    " << swellBars << "-bar swell, phrase at ppq " << phrasePpq << ": file is "
+                              << layout.bars << " bars" << std::endl;
+            }
+
+        check (allWhole, "every exported file is a whole power-of-two number of bars at the song tempo");
+        check (allContain, "the padded clip fits inside the file");
     }
 
     const auto captureDir = juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)

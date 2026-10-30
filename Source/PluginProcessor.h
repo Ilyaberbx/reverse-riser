@@ -3,6 +3,7 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "ReverseReverbRenderer.h"
 #include "BarAlignment.h"
+#include "ExportLayout.h"
 
 /**
     Glacier Riser: listens to the track it sits on (or a dropped file), lets you pick a segment,
