@@ -80,7 +80,7 @@ juce_add_plugin(GlacierRiser
     COMPANY_NAME "Mykhailo Nosenko"
     PLUGIN_MANUFACTURER_CODE Mnos
     PLUGIN_CODE Rvrb
-    FORMATS VST3 Standalone
+    FORMATS VST3 AU Standalone
     PRODUCT_NAME "Glacier Riser"
     ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.svg"
     IS_SYNTH FALSE
@@ -92,6 +92,7 @@ juce_add_plugin(GlacierRiser
     COPY_PLUGIN_AFTER_BUILD FALSE)
 
 target_sources(GlacierRiser PRIVATE
+    Source/Licensing.cpp
     Source/ReverseReverbRenderer.cpp
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp)
@@ -107,10 +108,17 @@ target_link_libraries(GlacierRiser
     PRIVATE
         GlacierRiserUIData
         juce::juce_audio_utils
+        juce::juce_cryptography
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
+
+# Test builds only (e.g. for GlacierRiserHostCheck): -DGLACIER_SKIP_LICENSE=ON unlocks without a license.
+option(GLACIER_SKIP_LICENSE "Build without the license gate" OFF)
+if(GLACIER_SKIP_LICENSE)
+    target_compile_definitions(GlacierRiser PRIVATE GLACIER_SKIP_LICENSE=1)
+endif()
 
 # ------------------------------------------------------------------------------
 # Optional end-to-end check: hosts the built VST3 like a DAW (capture, then in-sync playback).

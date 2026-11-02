@@ -247,10 +247,18 @@ export function createMockBackend(): Backend {
   clearSource();
   simulateDawPlayback();
 
+  // Any key containing "GOOD" activates, so both screens can be built in the browser.
+  let license = { unlocked: false, busy: false, error: "", accountUrl: "http://localhost:3000/account" };
+  function setLicense(patch: Partial<typeof license>) {
+    license = { ...license, ...patch };
+    emit("glacier:license", { ...license });
+  }
+
   return {
     kind: "mock",
 
     ready: async (): Promise<InitialPayload> => ({
+      license: { ...license },
       state: { ...state },
       params: { ...params },
       waveforms: waveforms(),
@@ -271,6 +279,19 @@ export function createMockBackend(): Backend {
         emit("glacier:state", { ...state });
       }
       scheduleRender();
+    },
+    activate(key) {
+      setLicense({ busy: true, error: "" });
+      setTimeout(() => {
+        const ok = key.toUpperCase().includes("GOOD");
+        setLicense({ busy: false, unlocked: ok, error: ok ? "" : "This license key is not valid" });
+      }, 600);
+    },
+    deactivate() {
+      setLicense({ unlocked: false, error: "" });
+    },
+    openAccount() {
+      window.open(license.accountUrl, "_blank");
     },
     beginGesture() {},
     endGesture() {},

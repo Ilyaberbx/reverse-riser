@@ -32,9 +32,13 @@ GlacierRiserEditor::GlacierRiserEditor (GlacierRiserProcessor& p)
     }
     else
     {
+       #if JUCE_WINDOWS
         fallbackLabel.setText ("Glacier Riser needs the Microsoft Edge WebView2 Runtime to draw its interface.\n"
                                "Install it from microsoft.com/edge/webview2 and reopen the plugin.",
                                juce::dontSendNotification);
+       #else
+        fallbackLabel.setText ("Glacier Riser could not open its interface on this system.", juce::dontSendNotification);
+       #endif
         fallbackLabel.setJustificationType (juce::Justification::centred);
         fallbackLabel.setColour (juce::Label::textColourId, juce::Colours::white);
         addAndMakeVisible (fallbackLabel);
@@ -92,8 +96,14 @@ juce::WebBrowserComponent::Options GlacierRiserEditor::createBrowserOptions()
     // WebView2 needs a writable profile folder: next to the host .exe (the default) usually is not.
     const auto userData = juce::File::getSpecialLocation (juce::File::tempDirectory).getChildFile ("GlacierRiserWebView2");
 
+   #if JUCE_WINDOWS
+    constexpr auto backend = Options::Backend::webview2;
+   #else
+    constexpr auto backend = Options::Backend::defaultBackend;   // WKWebView on macOS
+   #endif
+
     return Options {}
-        .withBackend (Options::Backend::webview2)
+        .withBackend (backend)
         .withWinWebView2Options (Options::WinWebView2 {}
                                      .withUserDataFolder (userData)
                                      .withBackgroundColour (backdrop)
@@ -107,6 +117,22 @@ juce::WebBrowserComponent::Options GlacierRiserEditor::createBrowserOptions()
         {
             pageReady = true;
             done (makeInitialPayload());
+        })
+        .withNativeFunction ("activate", [this] (const Args& args, Completion done)
+        {
+            processor.licensing->activate (argString (args, 0));
+            done (true);
+        })
+        .withNativeFunction ("openAccount", [this] (const Args&, Completion done)
+        {
+            // Links inside the WebView would navigate the plugin UI away.
+            juce::URL (processor.licensing->getSnapshot()["accountUrl"].toString()).launchInDefaultBrowser();
+            done (true);
+        })
+        .withNativeFunction ("deactivate", [this] (const Args&, Completion done)
+        {
+            processor.licensing->deactivate();
+            done (true);
         })
         .withNativeFunction ("setParam", [this] (const Args& args, Completion done)
         {
@@ -236,10 +262,12 @@ juce::var GlacierRiserEditor::makeInitialPayload()
     o->setProperty ("params", processor.getParameterSnapshot());
     o->setProperty ("waveforms", processor.getWaveformSnapshot());
     o->setProperty ("playback", processor.getPlaybackSnapshot());
+    o->setProperty ("license", processor.licensing->getSnapshot());
 
     lastStateVersion = processor.getStateVersion();
     lastWaveformVersion = processor.getWaveformVersion();
     lastNoticeVersion = processor.getNoticeVersion();
+    lastLicenseVersion = processor.licensing->getVersion();
     lastParamsJson = juce::JSON::toString (o->getProperty ("params"), true);
     lastPlaybackJson = juce::JSON::toString (o->getProperty ("playback"), true);
 
@@ -269,6 +297,12 @@ void GlacierRiserEditor::timerCallback()
     {
         lastStateVersion = v;
         emit ("glacier:state", processor.getStateSnapshot());
+    }
+
+    if (const int v = processor.licensing->getVersion(); v != lastLicenseVersion)
+    {
+        lastLicenseVersion = v;
+        emit ("glacier:license", processor.licensing->getSnapshot());
     }
 
     if (const int v = processor.getWaveformVersion(); v != lastWaveformVersion)

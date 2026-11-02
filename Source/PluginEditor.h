@@ -11,9 +11,9 @@
       Native functions (JS -> C++, each returns a promise):
         ready, setParam, beginGesture, endGesture, setSelection, play, stop, setLoop, reset,
         loadPreset, savePreset, openFile, exportWav, openExportsFolder,
-        startDragOut, loadAudioData, setTheme
+        startDragOut, loadAudioData, setTheme, activate, deactivate, openAccount
       Events (C++ -> JS):
-        glacier:state, glacier:params, glacier:waveforms, glacier:playback, glacier:toast, glacier:theme
+        glacier:state, glacier:params, glacier:waveforms, glacier:playback, glacier:toast, glacier:theme, glacier:license
       Initialisation data: theme (the saved UI theme, applied before the page draws)
 */
 class GlacierRiserEditor : public juce::AudioProcessorEditor,
@@ -48,7 +48,7 @@ private:
     std::unique_ptr<juce::FileChooser> fileChooser;
 
     bool pageReady = false;
-    int lastStateVersion = -1, lastWaveformVersion = -1, lastNoticeVersion = 0;
+    int lastStateVersion = -1, lastWaveformVersion = -1, lastNoticeVersion = 0, lastLicenseVersion = -1;
     int lastThemeVersion = UiSettings::themeVersion.load();
     juce::String lastParamsJson, lastPlaybackJson;
 

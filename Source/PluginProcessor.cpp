@@ -345,6 +345,9 @@ void GlacierRiserProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
     for (int ch = numInputs; ch < getTotalNumOutputChannels(); ++ch)
         buffer.clear (ch, 0, numSamples);
 
+    if (! licensing->isUnlocked())
+        return;
+
     //-- Host transport -------------------------------------------------------------
     bool hasTransport = false, transportPlaying = false;
     juce::Optional<juce::int64> timeInSamples;

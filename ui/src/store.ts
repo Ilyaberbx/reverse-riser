@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { backend } from "./bridge";
-import type { ParamId, Params, Playback, PluginState, Toast, Waveforms } from "./bridge";
+import type { License, ParamId, Params, Playback, PluginState, Toast, Waveforms } from "./bridge";
 import { DEFAULT_PARAMS } from "./params";
 
 /**
@@ -10,6 +10,7 @@ import { DEFAULT_PARAMS } from "./params";
 */
 export interface AppStore {
   connected: boolean;
+  license: License;
   state: PluginState;
   params: Params;
   waveforms: Waveforms;
@@ -19,6 +20,8 @@ export interface AppStore {
 
 let store: AppStore = {
   connected: false,
+  // Locked until the plugin says otherwise; the panel never flashes before activation.
+  license: { unlocked: false, busy: false, error: "", accountUrl: "" },
   state: {
     hasSource: false,
     sourceKind: "none",
@@ -114,6 +117,7 @@ export async function connect() {
   backend.on("glacier:waveforms", (waveforms) => set({ waveforms }));
   backend.on("glacier:playback", (playback) => set({ playback }));
   backend.on("glacier:toast", (t) => showToast(t.text, t.error));
+  backend.on("glacier:license", (license) => set({ license }));
 
   const initial = await backend.ready();
   set({ connected: true, ...initial });

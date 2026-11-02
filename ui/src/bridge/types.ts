@@ -95,7 +95,16 @@ export interface Result {
   message: string;
 }
 
+export interface License {
+  unlocked: boolean;
+  /** A network call (activate/deactivate) is in flight. */
+  busy: boolean;
+  error: string;
+  accountUrl: string;
+}
+
 export interface InitialPayload {
+  license: License;
   state: PluginState;
   params: Params;
   waveforms: Waveforms;
@@ -110,6 +119,7 @@ export interface BackendEvents {
   "glacier:toast": Toast;
   /** The UI theme changed in another open instance. */
   "glacier:theme": Theme;
+  "glacier:license": License;
 }
 
 export type BackendEventName = keyof BackendEvents;
@@ -141,4 +151,8 @@ export interface Backend {
 
   /** Saves the UI theme for every instance of the plugin. */
   setTheme(theme: Theme): void;
+
+  activate(key: string): void;
+  deactivate(): void;
+  openAccount(): void;
 }

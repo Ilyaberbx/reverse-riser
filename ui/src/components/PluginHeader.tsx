@@ -199,6 +199,10 @@ function PluginMenu() {
             <span>Include original after the swell</span>
           </button>
           <div className="popover__divider" />
+          <button type="button" role="menuitem" className="popover__item" onClick={run(() => backend.deactivate())}>
+            <span>Deactivate this machine</span>
+          </button>
+          <div className="popover__divider" />
           <div className="popover__footnote">
             Swell {tail.toFixed(2)} s at {Math.round(bpm)} BPM. Tempo follows the host.
           </div>

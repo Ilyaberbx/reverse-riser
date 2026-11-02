@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { backend } from "./bridge";
+import { ActivationScreen } from "./components/ActivationScreen";
 import { EffectModeSelector } from "./components/EffectModeSelector";
 import { BackdropIce, PanelIce } from "./components/IceDecor";
 import { PluginHeader } from "./components/PluginHeader";
@@ -104,6 +105,7 @@ export default function App() {
   const { scale, left, top } = useStageScale();
   const dropActive = useFileDrop();
   const connected = useStore((s) => s.connected);
+  const unlocked = useStore((s) => s.license.unlocked);
 
   return (
     <div className="viewport">
@@ -136,6 +138,7 @@ export default function App() {
           </div>
           <ToastHost />
         </main>
+        {connected && !unlocked && <ActivationScreen />}
       </div>
     </div>
   );

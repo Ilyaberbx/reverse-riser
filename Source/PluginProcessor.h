@@ -4,6 +4,7 @@
 #include "ReverseReverbRenderer.h"
 #include "BarAlignment.h"
 #include "ExportLayout.h"
+#include "Licensing.h"
 
 /**
     Glacier Riser: listens to the track it sits on (or a dropped file), lets you pick a segment,
@@ -40,6 +41,9 @@ public:
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
     juce::AudioProcessorEditor* createEditor() override;
+
+    /** Locked: processBlock passes audio through untouched and the UI shows activation. */
+    juce::SharedResourcePointer<Licensing> licensing;
     bool hasEditor() const override { return true; }
 
     const juce::String getName() const override { return JucePlugin_Name; }

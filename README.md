@@ -171,3 +171,26 @@ third_party/webview2/       WebView2 SDK headers and static loader
 
 Pre-delay (20 ms) and diffusion (70 %) are fixed inside the engine: with a swell-only clip the
 pre-delay only moves its placement, and diffusion barely changes the sound.
+
+## Licensing
+
+The plugin is locked until a license key activates it: the UI shows an activation screen and
+audio passes through untouched. Keys come from the store (`ice-cold-mono`, `apps/api`), which
+signs a license for the machine on activation (RSA-2048, PKCS#1 v1.5 / SHA-256). The license is
+kept in `<app data>/GlacierRiser/license.json` and verified offline on every load; the plugin
+only goes online to activate, deactivate (menu → Deactivate this machine) and for a weekly
+revocation re-check that never locks the plugin when offline. See `Source/Licensing.cpp`.
+
+Before a release, in `Source/Licensing.cpp`:
+
+- `serverUrl`: the store's public origin.
+- `publicModulusHex`: the public half of the production `LICENSE_SIGNING_KEY`. Print it from
+  `apps/api` with:
+
+  ```bash
+  node -e "const c=require('crypto');console.log(Buffer.from(c.createPublicKey(c.createPrivateKey({key:Buffer.from(process.env.LICENSE_SIGNING_KEY,'base64'),format:'der',type:'pkcs8'})).export({format:'jwk'}).n,'base64url').toString('hex'))"
+  ```
+
+Never change `productId` or the `GlacierRiser` license folder once keys are sold: existing
+activations would stop validating. For HostCheck or other automated runs, configure with
+`-DGLACIER_SKIP_LICENSE=ON` to build without the gate.

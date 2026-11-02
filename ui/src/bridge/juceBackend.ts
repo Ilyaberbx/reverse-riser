@@ -83,6 +83,10 @@ export function createJuceBackend(): Backend {
     setTheme: (theme) => void call("setTheme", theme),
     startDragOut: async () => asResult(await call("startDragOut")),
 
+    activate: (key) => void call("activate", key),
+    deactivate: () => void call("deactivate"),
+    openAccount: () => void call("openAccount"),
+
     loadAudioFile: async (file) => {
       if (file.size > 200 * 1024 * 1024)
         return { ok: false, message: "That file is too large to drop (200 MB max). Use Load audio file instead." };
