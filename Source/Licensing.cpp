@@ -113,11 +113,25 @@ bool Licensing::verifySignature (const juce::MemoryBlock& payload, const juce::M
 }
 
 //==============================================================================
+/** Setting the environment variable GLACIER_SKIP_LICENSE (to 1, true or yes) before the host
+    starts unlocks the plugin without a license, like the -DGLACIER_SKIP_LICENSE=ON build. */
+static bool skipLicenseFromEnvironment()
+{
+    const auto value = juce::SystemStats::getEnvironmentVariable ("GLACIER_SKIP_LICENSE", {}).trim().toLowerCase();
+    return value == "1" || value == "true" || value == "yes";
+}
+
 Licensing::Licensing()
 {
    #if defined (GLACIER_SKIP_LICENSE)
     unlocked = true;
    #else
+    if (skipLicenseFromEnvironment())
+    {
+        unlocked = true;
+        return;
+    }
+
     loadFromDisk();
     recheckIfStale();
    #endif
