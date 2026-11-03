@@ -231,7 +231,7 @@ export function PluginHeader() {
   return (
     <header className="header">
       <div className="header__brand">
-        <BrandLogo size={40} />
+        <BrandLogo size={34} />
         <span className="wordmark">
           <span className="wordmark__light">GLACIER</span>
           <span className="wordmark__bold">RISER</span>

@@ -11,10 +11,10 @@ import { WaveformDisplay } from "./components/WaveformDisplay";
 import { FADE, LEVEL, LOW_CUT, SIZE } from "./params";
 import { actions, showToast, useStore } from "./store";
 
-export const DESIGN_W = 860;
-export const DESIGN_H = 680;
+export const DESIGN_W = 700;
+export const DESIGN_H = 860;
 
-/** Uniformly scales the 860 x 680 design to the window (the plugin keeps this aspect ratio). */
+/** Uniformly scales the 700 x 860 design to the window (the plugin keeps this aspect ratio). */
 function useStageScale() {
   const [fit, setFit] = useState({ scale: 1, left: 0, top: 0 });
 
@@ -123,12 +123,14 @@ export default function App() {
             <WaveformDisplay dropActive={dropActive} />
           </div>
           <div className="panel__main">
-            <div className="side-stack side-stack--left">
+            <CenterOrb />
+          </div>
+          <div className="panel__knobs">
+            <div className="knob-pair">
               <SideKnob param={SIZE} />
               <SideKnob param={LOW_CUT} />
             </div>
-            <CenterOrb />
-            <div className="side-stack side-stack--right">
+            <div className="knob-pair">
               <SideKnob param={FADE} />
               <SideKnob param={LEVEL} />
             </div>

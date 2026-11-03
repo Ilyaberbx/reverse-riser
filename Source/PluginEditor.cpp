@@ -3,7 +3,7 @@
 
 namespace
 {
-    constexpr int designWidth = 860, designHeight = 680;
+    constexpr int designWidth = 700, designHeight = 860;
     constexpr int maxDroppedBytes = 200 * 1024 * 1024;
     const juce::Colour backdrop { 0xff071526 };
 
@@ -45,7 +45,7 @@ GlacierRiserEditor::GlacierRiserEditor (GlacierRiserProcessor& p)
     }
 
     setResizable (true, true);
-    setResizeLimits (645, 510, 1240, 980);   // keeps the 860:680 shape
+    setResizeLimits (560, 688, 980, 1204);   // keeps the 700:860 shape
 
     if (auto* sizeConstrainer = getConstrainer())
         sizeConstrainer->setFixedAspectRatio ((double) designWidth / (double) designHeight);

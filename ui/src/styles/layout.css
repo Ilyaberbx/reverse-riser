@@ -1,4 +1,4 @@
-/* The whole interface is designed on a fixed 860 x 680 stage that App scales to the window. */
+/* The whole interface is designed on a fixed 700 x 860 stage that App scales to the window. */
 
 *,
 *::before,
@@ -84,27 +84,47 @@ body {
   pointer-events: none;
 }
 
-/* Rows (panel-local coordinates; the panel is 836 x 656). */
+/* Rows (panel-local coordinates; the panel is 676 x 836). */
 
 .panel__waveform {
   position: absolute;
-  top: 70px;
-  left: 22px;
-  width: 792px;
+  top: 74px;
+  left: 20px;
+  width: 636px;
   height: 172px;
 }
 
 .panel__main {
   position: absolute;
-  top: 242px;
+  top: 252px;
   left: 0;
   right: 0;
-  height: 330px;
+  height: 320px;
+}
+
+/* The four small knobs in one row under the orb: Size and Low Cut, then Fade and Level. */
+.panel__knobs {
+  position: absolute;
+  top: 600px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 72px;
+}
+
+.knob-pair {
+  display: flex;
+  gap: 20px;
+}
+
+.knob-pair > * {
+  width: 112px;
 }
 
 .panel__footer {
   position: absolute;
-  top: 588px;
+  top: 752px;
   left: 0;
   right: 0;
   height: 46px;
@@ -112,28 +132,9 @@ body {
   justify-content: center;
 }
 
-/* Two small knobs stacked on each side of the orb, centred on its height (orb centre: 174 px). */
-.side-stack {
-  position: absolute;
-  top: 56px;
-  width: 132px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-}
-
-.side-stack--left {
-  left: 86px;
-}
-
-.side-stack--right {
-  right: 86px;
-}
-
 .orb {
   position: absolute;
-  top: 26px;   /* clear of the waveform: the orb no longer overlaps it */
+  top: 18px;
   left: 50%;
   transform: translateX(-50%);
   width: 296px;

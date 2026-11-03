@@ -4,7 +4,7 @@
     drawn every frame on top.
 */
 
-export const WAVE_W = 792;
+export const WAVE_W = 636;
 export const WAVE_H = 172;
 export const PAD_X = 34;
 // Vertical layout of the 172 px panel: Reset strip 0-36, waveform band 44-124, button strip 134-162.

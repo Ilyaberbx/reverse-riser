@@ -75,11 +75,11 @@ function Defs() {
 /** Shards in the dark margin around the panel (behind it). */
 export function BackdropIce() {
   return (
-    <svg className="backdrop-ice" viewBox="0 0 860 680" preserveAspectRatio="none" aria-hidden="true">
+    <svg className="backdrop-ice" viewBox="0 0 700 860" preserveAspectRatio="none" aria-hidden="true">
       <Defs />
-      <Shard x={-14} y={600} scale={1.5} rotate={-12} variant={0} opacity={0.55} />
-      <Shard x={812} y={608} scale={1.4} rotate={18} variant={1} opacity={0.5} />
-      <Shard x={820} y={-10} scale={1.1} rotate={40} variant={2} opacity={0.4} />
+      <Shard x={-14} y={780} scale={1.5} rotate={-12} variant={0} opacity={0.55} />
+      <Shard x={652} y={788} scale={1.4} rotate={18} variant={1} opacity={0.5} />
+      <Shard x={660} y={-10} scale={1.1} rotate={40} variant={2} opacity={0.4} />
       <Shard x={-10} y={-6} scale={0.9} rotate={-30} variant={1} opacity={0.35} />
     </svg>
   );
@@ -88,20 +88,18 @@ export function BackdropIce() {
 /** Shards resting on the panel's free corners, plus a faint frost grain. */
 export function PanelIce() {
   return (
-    <svg className="panel-ice" viewBox="0 0 836 656" aria-hidden="true">
+    <svg className="panel-ice" viewBox="0 0 676 836" aria-hidden="true">
       <Defs />
-      <rect width="836" height="656" filter="url(#frostNoise)" />
+      <rect width="676" height="836" filter="url(#frostNoise)" />
       {/* lower left, outside the effect bar */}
-      <Shard x={16} y={578} scale={1.2} rotate={-8} variant={0} />
-      <Shard x={88} y={604} scale={0.75} rotate={22} variant={2} opacity={0.75} />
-      <Shard x={146} y={618} scale={0.5} rotate={-35} variant={1} opacity={0.7} />
+      <Shard x={14} y={758} scale={1.2} rotate={-8} variant={0} />
+      <Shard x={86} y={786} scale={0.7} rotate={22} variant={2} opacity={0.75} />
       {/* lower right */}
-      <Shard x={762} y={572} scale={1.25} rotate={14} variant={1} />
-      <Shard x={700} y={606} scale={0.7} rotate={-18} variant={0} opacity={0.75} />
-      <Shard x={656} y={620} scale={0.45} rotate={30} variant={2} opacity={0.65} />
+      <Shard x={604} y={752} scale={1.25} rotate={14} variant={1} />
+      <Shard x={556} y={788} scale={0.6} rotate={-18} variant={0} opacity={0.75} />
       {/* left and right edges beside the orb */}
-      <Shard x={40} y={350} scale={0.9} rotate={-20} variant={2} opacity={0.6} />
-      <Shard x={770} y={362} scale={0.85} rotate={25} variant={0} opacity={0.6} />
+      <Shard x={34} y={380} scale={0.9} rotate={-20} variant={2} opacity={0.6} />
+      <Shard x={608} y={396} scale={0.85} rotate={25} variant={0} opacity={0.6} />
     </svg>
   );
 }

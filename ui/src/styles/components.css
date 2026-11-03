@@ -18,10 +18,10 @@ button {
   left: 0;
   right: 0;
   height: 62px;
-  padding: 0 22px;
+  padding: 0 18px;
   display: grid;
   grid-template-columns: auto 1fr auto;
-  column-gap: 16px;
+  column-gap: 10px;
   align-items: center;
   background: linear-gradient(180deg, rgba(250, 253, 255, 0.85), rgba(234, 245, 255, 0.55));
   border-bottom: 1px solid rgba(73, 105, 135, 0.18);
@@ -31,12 +31,12 @@ button {
 .header__brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
 }
 
 .wordmark {
-  font-size: 23px;
-  letter-spacing: 0.24em;
+  font-size: 18px;
+  letter-spacing: 0.2em;
   line-height: 1;
 }
 
@@ -67,8 +67,8 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-control);
   border: 1px solid rgba(16, 45, 82, 0.14);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(226, 239, 252, 0.9));
@@ -112,7 +112,7 @@ button {
 
 .preset__field {
   display: flex;
-  height: 42px;
+  height: 40px;
   border-radius: var(--radius-control);
   border: 1px solid rgba(16, 45, 82, 0.14);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(228, 240, 252, 0.9));
@@ -124,7 +124,7 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 186px;
+  width: 176px;
   padding: 0 10px 0 16px;
   border: 0;
   background: transparent;
@@ -155,7 +155,7 @@ button {
 }
 
 .preset__nav {
-  width: 46px;
+  width: 38px;
   border: 0;
   border-left: 1px solid rgba(16, 45, 82, 0.12);
   background: transparent;
@@ -276,7 +276,7 @@ button {
   background: var(--blue-primary);
 }
 
-/* Fixed inside the transformed stage, so it covers exactly the 860 x 680 plugin area. */
+/* Fixed inside the transformed stage, so it covers exactly the 700 x 860 plugin area. */
 .dialog-backdrop {
   position: fixed;
   inset: 0;
