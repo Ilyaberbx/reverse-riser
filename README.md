@@ -103,10 +103,10 @@ rescanning plugins in your DAW.
 | **LOOP** | Repeats the preview. |
 | **RESET** | Clears the captured or loaded audio. The next DAW playback captures the track again. Knob settings are kept. |
 | **Phone / Chorus / Tremolo** | Independent on/off switches for the swell; any combination can be on, and an effect that is on glows. Hover one for its settings: Phone has Mix and Tone, Chorus has Mix and Rate, Tremolo has Mix and Timing (1/4 to 1/32, triplets) locked to the tempo. |
-| **Size** (left of the orb) | Room size of the reverb, 10–150 %: small and tight to a long wash. |
-| **Low Cut** (left, below Size) | High-pass on the swell, Off to 1 kHz, to keep it from muddying the mix. |
-| **Fade** (right of the orb) | How the swell starts: 0 % begins with the reverb already audible, 100 % rises smoothly from silence. |
-| **Level** (right, below Fade) | Output level of the swell, -24 to +6 dB. |
+| **Size** (first knob under the orb) | Room size of the reverb, 10–150 %: small and tight to a long wash. |
+| **Low Cut** (second, next to Size) | High-pass on the swell, Off to 1 kHz, to keep it from muddying the mix. |
+| **Fade** (third) | How the swell starts: 0 % begins with the reverb already audible, 100 % rises smoothly from silence. |
+| **Level** (fourth, next to Fade) | Output level of the swell, -24 to +6 dB. |
 | **LOCK** | Keeps the current take when the DAW plays. |
 | **Reverse orb** | Musical length of the swell: 1/8 bar to 8 bars, following the host tempo and time signature (120 BPM in the standalone app). |
 | **Sun / moon** (header) | Switches between the light and dark theme. It is a look only: saved once for every instance in `%APPDATA%\AtmosRiser\ui-settings.xml`, and never part of presets, undo, automation or the DAW project. |
