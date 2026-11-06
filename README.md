@@ -28,10 +28,12 @@ Dragged and exported clips start exactly on a bar line (padded with silence), an
 says which bar to drop them on, e.g. `track_drop-on-bar-16_glacier-riser.wav`. With grid snapping on,
 the swell lands sample-accurately in front of the phrase.
 
-The file is also padded at the end to a whole power-of-two number of bars (1, 2, 4, 8 or 16) and
-carries an ACID tempo chunk. Ableton guesses a dropped file's tempo from its length, so a whole
-number of bars makes it play at the project tempo, unstretched. Drop the clip on its own audio
-track: the trailing silence would replace the vocal on the same track.
+The file ends where the swell ends, with no silent tail. It is already rendered at the project
+tempo, so play it unwarped: Ableton treats a short dropped file as a 1, 2, 4, 8 or 16 bar loop and
+would stretch it, so turn **Warp** off on the clip, or set Preferences > Record/Warp/Launch >
+Loop/Warp Short Samples to Unwarped One Shot once. The file carries an ACID chunk with the tempo
+that marks it as a one-shot not to be stretched. Drop the clip on its own audio track: the silence
+in front of the swell would replace the vocal on the same track.
 
 Insert Glacier Riser first on the vocal track. It captures whatever reaches its slot, so placed
 after other effects it records them, and the dropped clip would then be processed by them twice.

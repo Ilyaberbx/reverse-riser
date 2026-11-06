@@ -1294,12 +1294,10 @@ bool GlacierRiserProcessor::exportRenderedToFile (const juce::File& file, juce::
         return false;
     }
 
-    // Silence in front puts the clip on a bar line; silence after it makes the file a whole
-    // power-of-two number of bars, so a DAW that infers tempo from length plays it unstretched.
+    // Silence in front puts the clip on a bar line; the file ends where the swell ends.
     const double bpm = juce::jlimit (20.0, 400.0, hostBpm.load());
     const int numerator = timeSigNumerator.load(), denominator = timeSigDenominator.load();
-    const double beatsPerBar = numerator * 4.0 / (double) denominator;
-    const auto layout = layoutExport (clip->buffer.getNumSamples(), getExportAlignment(), bpm, beatsPerBar, clip->sampleRate);
+    const auto layout = layoutExport (clip->buffer.getNumSamples(), getExportAlignment(), bpm, clip->sampleRate);
 
     juce::AudioBuffer<float> padded (clip->buffer.getNumChannels(), layout.totalSamples);
     padded.clear();
@@ -1307,15 +1305,16 @@ bool GlacierRiserProcessor::exportRenderedToFile (const juce::File& file, juce::
     for (int ch = 0; ch < padded.getNumChannels(); ++ch)
         padded.copyFrom (ch, layout.padStart, clip->buffer, ch, 0, clip->buffer.getNumSamples());
 
-    // ACID tempo chunk: DAWs that read it (FL Studio, Cubase, Reaper, ...) get the tempo directly.
+    // ACID chunk: the project tempo, and a one-shot that is not to be stretched. The file is
+    // rendered at the project tempo already and is rarely a whole number of bars long.
     juce::StringPairArray metadata;
-    metadata.set (juce::WavAudioFormat::acidOneShot, "0");
+    metadata.set (juce::WavAudioFormat::acidOneShot, "1");
     metadata.set (juce::WavAudioFormat::acidRootSet, "0");
-    metadata.set (juce::WavAudioFormat::acidStretch, "1");
+    metadata.set (juce::WavAudioFormat::acidStretch, "0");
     metadata.set (juce::WavAudioFormat::acidDiskBased, "0");
     metadata.set (juce::WavAudioFormat::acidizerFlag, "0");
     metadata.set (juce::WavAudioFormat::acidRootNote, "60");
-    metadata.set (juce::WavAudioFormat::acidBeats, juce::String (juce::roundToInt (layout.bars * beatsPerBar)));
+    metadata.set (juce::WavAudioFormat::acidBeats, juce::String (juce::roundToInt (layout.beats)));
     metadata.set (juce::WavAudioFormat::acidNumerator, juce::String (numerator));
     metadata.set (juce::WavAudioFormat::acidDenominator, juce::String (denominator));
     metadata.set (juce::WavAudioFormat::acidTempo, juce::String (bpm, 3));
