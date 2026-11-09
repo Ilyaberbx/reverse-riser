@@ -52,8 +52,10 @@ if(NOT EXISTS "${UI_DIR}/node_modules")
     endif()
 endif()
 
-file(GLOB_RECURSE UI_SOURCES CONFIGURE_DEPENDS
-    "${UI_DIR}/src/*"
+# Recurse only over src/; GLOB_RECURSE on a literal index.html would also match the
+# built ui/dist/index.html (the command's own output) and form a ninja dependency cycle.
+file(GLOB_RECURSE UI_SRC_SOURCES CONFIGURE_DEPENDS "${UI_DIR}/src/*")
+set(UI_SOURCES ${UI_SRC_SOURCES}
     "${UI_DIR}/index.html"
     "${UI_DIR}/vite.config.ts"
     "${UI_DIR}/package.json")
