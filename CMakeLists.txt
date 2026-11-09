@@ -1,4 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
+
+# Ship a universal binary so the plugin loads on both Intel and Apple Silicon
+# Macs. Must be set before project(). Override with -DCMAKE_OSX_ARCHITECTURES.
+if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "macOS build architectures")
+endif()
+
 project(GlacierRiser VERSION 2.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
