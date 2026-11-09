@@ -12,8 +12,8 @@ namespace
     constexpr auto publicModulusHex =
         "d55cabb3b069bf8461cd8d330869fdbfaf901f21aa2a9f28db76288599e60bda4fc59c081591c967db728bef2d82dd40d9579e8610dfc398fdbe08c9654615943e6e70f5f07d96d44baec0b45792966b140fe05c4f474879b94376097da8a88e0c3cc30251a0d680bb674b3ee4dea7b5fdca0d8a5913f73f6670fa884d09340d8b636a0e166a42c8f983ef7c7f07175c9d3cfc6c7a40db8e9e11f2d4e6528241d33386b875c455ebf746484c8b23e1679e4e4ad05b80e915682e451fb86a2a8e8bfa498e88a6c30442856b217095310c34b69f67d14c55d2034ea23fadbe75a0e50bba7ad4b31f910427262827a31e7b6c7ad65f034f35275abae0af0320f763";
 
-    // Production: the store's public origin. The web app proxies /api/* to apps/api.
-    constexpr auto serverUrl = "http://localhost:3000";
+    // The store's public origin. The web app proxies /api/* to apps/api.
+    constexpr auto serverUrl = "https://icecoldsound.com";
 
     constexpr juce::int64 recheckIntervalMs = 7LL * 24 * 60 * 60 * 1000;
 
@@ -113,25 +113,13 @@ bool Licensing::verifySignature (const juce::MemoryBlock& payload, const juce::M
 }
 
 //==============================================================================
-/** Setting the environment variable GLACIER_SKIP_LICENSE (to 1, true or yes) before the host
-    starts unlocks the plugin without a license, like the -DGLACIER_SKIP_LICENSE=ON build. */
-static bool skipLicenseFromEnvironment()
-{
-    const auto value = juce::SystemStats::getEnvironmentVariable ("GLACIER_SKIP_LICENSE", {}).trim().toLowerCase();
-    return value == "1" || value == "true" || value == "yes";
-}
-
 Licensing::Licensing()
 {
    #if defined (GLACIER_SKIP_LICENSE)
+    // Compile-time gate bypass for HostCheck and other automated runs only
+    // (-DGLACIER_SKIP_LICENSE=ON). Release builds never define it, so they stay gated.
     unlocked = true;
    #else
-    if (skipLicenseFromEnvironment())
-    {
-        unlocked = true;
-        return;
-    }
-
     loadFromDisk();
     recheckIfStale();
    #endif

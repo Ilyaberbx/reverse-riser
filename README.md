@@ -195,8 +195,5 @@ Before a release, in `Source/Licensing.cpp`:
 
 Never change `productId` or the `GlacierRiser` license folder once keys are sold: existing
 activations would stop validating. For HostCheck or other automated runs, configure with
-`-DGLACIER_SKIP_LICENSE=ON` to build without the gate.
-
-Any build can also skip the gate at run time: set the environment variable
-`GLACIER_SKIP_LICENSE=1` (or `true` / `yes`) before starting the DAW or the standalone app. The
-license is then neither read nor checked online.
+`-DGLACIER_SKIP_LICENSE=ON` to build without the gate. Release builds never define it, so a
+shipped binary is always gated — there is no run-time bypass.

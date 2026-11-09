@@ -1,0 +1,46 @@
+name: Windows build
+
+# Release packaging for Windows: builds the gated plugin (no license bypass) and
+# uploads GlacierRiser-Windows-VST3.zip / -Standalone.zip as the run's Artifacts.
+# Tests run in build_and_test.yml, so this workflow does not configure the skip flag.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    env:
+      ARTIFACTS: Builds/GlacierRiser_artefacts/Release
+    steps:
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Ninja
+        run: choco install ninja
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure
+        run: cmake -B Builds -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl .
+
+      - name: Build
+        run: cmake --build Builds --config Release --target GlacierRiser_VST3 GlacierRiser_Standalone
+
+      - name: Package zips
+        run: |
+          mkdir -p dist
+          ( cd "$ARTIFACTS/VST3" && 7z a -tzip "$GITHUB_WORKSPACE/dist/GlacierRiser-Windows-VST3.zip" "Glacier Riser.vst3" )
+          ( cd "$ARTIFACTS/Standalone" && 7z a -tzip "$GITHUB_WORKSPACE/dist/GlacierRiser-Windows-Standalone.zip" "Glacier Riser.exe" )
+
+      - name: Upload plugins
+        uses: actions/upload-artifact@v4
+        with:
+          name: GlacierRiser-Windows
+          path: dist/*.zip
