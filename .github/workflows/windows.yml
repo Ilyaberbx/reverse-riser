@@ -59,7 +59,7 @@ jobs:
         run: packaging/windows/test-setup.ps1 dist/GlacierRiser-Windows-Setup.exe
 
       - name: Upload plugins
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: GlacierRiser-Windows
           path: |
