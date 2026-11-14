@@ -216,6 +216,7 @@ export function PluginHeader() {
     <header className="header">
       <div className="header__brand" role="img" aria-label="Glacier Riser">
         <BrandLogo size={34} />
+        <span className="wordmark" aria-hidden="true">GLACIER</span>
       </div>
 
       <div className="header__center">

@@ -26,7 +26,17 @@
 GLACIER RISER: Windows Standalone
 Ice Cold Sound
 
-INSTALLING
+EASIEST: USE THE INSTALLER
+Download "GlacierRiser-Windows-Setup.exe" from your account page at
+https://icecoldsound.com/en/account and run it. It installs the VST3
+plug-in and the Standalone app in the right places; untick either one
+on the Components page to skip it. Remove it later from
+Settings > Apps.
+
+If Windows SmartScreen says it protected your PC, click "More info",
+then "Run anyway". That happens because the installer isn't signed yet.
+
+INSTALLING BY HAND, FROM THIS ZIP
 1. Right-click this zip and choose "Extract All".
 2. Move "Glacier Riser.exe" wherever you keep your apps, for example
    C:\Program Files\Ice Cold Sound.

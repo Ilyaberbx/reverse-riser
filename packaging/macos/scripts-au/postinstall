@@ -1,0 +1,4 @@
+#!/bin/sh
+# Make Logic and other AU hosts see the new component without a reboot.
+killall -9 AudioComponentRegistrar 2>/dev/null || true
+exit 0

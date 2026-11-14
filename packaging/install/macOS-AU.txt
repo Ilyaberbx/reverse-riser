@@ -26,7 +26,22 @@
 GLACIER RISER: macOS Audio Unit
 Ice Cold Sound
 
-INSTALLING
+EASIEST: USE THE INSTALLER
+Download "GlacierRiser-macOS-Installer.pkg" from your account page at
+https://icecoldsound.com/en/account and double-click it. It puts VST3,
+AU and the Standalone app in the right places for every user on this
+Mac. Click "Customize" to skip any of them.
+
+The installer isn't notarized by Apple yet, so macOS may say it "can't
+be opened" or "Apple could not verify" it. Click Done, then open
+System Settings > Privacy & Security, scroll down and click
+"Open Anyway" next to the Glacier Riser message. (On macOS 14 and
+older you can Control-click the file and choose Open instead.)
+
+Installed Glacier Riser by hand before? Delete the old copy from
+~/Library/Audio/Plug-Ins first, so your DAW doesn't list it twice.
+
+INSTALLING BY HAND, FROM THIS ZIP
 1. Unzip this file. You get "Glacier Riser.component".
 2. In Finder, press Cmd+Shift+G and go to:
      ~/Library/Audio/Plug-Ins/Components

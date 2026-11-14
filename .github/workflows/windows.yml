@@ -1,7 +1,9 @@
 name: Release build
 
 # Release packaging: builds the gated plugin (no license bypass) for Windows and macOS and
-# uploads the store's download zips (GlacierRiser-<OS>-<format>.zip) as the run's Artifacts.
+# uploads the store's downloads as the run's Artifacts: one installer per OS
+# (GlacierRiser-macOS-Installer.pkg, GlacierRiser-Windows-Setup.exe) plus the manual-install zips
+# (GlacierRiser-<OS>-<format>.zip). Each installer is run through its scenario tests first.
 # Kept as windows.yml: a workflow with this filename exists on main, so it can be dispatched
 # on any branch.
 on:
@@ -21,8 +23,8 @@ jobs:
     steps:
       - uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install Ninja
-        run: choco install ninja
+      - name: Install Ninja and Inno Setup
+        run: choco install ninja innosetup -y --no-progress
 
       - uses: actions/checkout@v4
         with:
@@ -44,11 +46,25 @@ jobs:
             ( cd "pkg-$fmt" && 7z a -tzip "$zip" INSTALLATION.txt )
           done
 
+      # signing: sign the plugin binaries and the setup (e.g. Azure Trusted Signing) here.
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path CMakeLists.txt -Pattern 'project\(GlacierRiser VERSION ([0-9.]+)\)').Matches[0].Groups[1].Value
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$version" "/DArtefacts=$pwd\$($env:ARTIFACTS -replace '/', '\')" "/O$pwd\dist" packaging\windows\GlacierRiser.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Test installer
+        shell: pwsh
+        run: packaging/windows/test-setup.ps1 dist/GlacierRiser-Windows-Setup.exe
+
       - name: Upload plugins
         uses: actions/upload-artifact@v4
         with:
           name: GlacierRiser-Windows
-          path: dist/*.zip
+          path: |
+            dist/*.zip
+            dist/*.exe
 
   macos:
     runs-on: macos-latest
@@ -71,6 +87,7 @@ jobs:
 
       # Ad-hoc until there is a Developer ID; ditto without resource forks or xattrs keeps the
       # bundle seal intact (no ._ files in the zip).
+      # signing: Developer ID Application + hardened runtime here, then notarize the pkg below.
       - name: Sign and package zips
         run: |
           mkdir -p dist
@@ -84,8 +101,21 @@ jobs:
             ( cd "$stage" && zip -qry -X "$zip" . )
           done
 
+      - name: Build installer
+        run: |
+          version=$(sed -n 's/^project(GlacierRiser VERSION \([0-9.]*\)).*/\1/p' CMakeLists.txt)
+          packaging/macos/build-pkg.sh "$ARTIFACTS" "$version" dist/GlacierRiser-macOS-Installer.pkg
+
+      - name: Test installer
+        run: |
+          sudo packaging/macos/test-pkg.sh dist/GlacierRiser-macOS-Installer.pkg
+          killall -9 AudioComponentRegistrar 2>/dev/null || true
+          auval -v aumf Glrs Icsd
+
       - name: Upload plugins
         uses: actions/upload-artifact@v4
         with:
           name: GlacierRiser-macOS
-          path: dist/*.zip
+          path: |
+            dist/*.zip
+            dist/*.pkg
