@@ -34,22 +34,6 @@ button {
   gap: 10px;
 }
 
-.wordmark {
-  font-size: 18px;
-  letter-spacing: 0.2em;
-  line-height: 1;
-}
-
-.wordmark__light {
-  font-weight: 500;
-  color: #5a7697;
-}
-
-.wordmark__bold {
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
 .header__center {
   display: flex;
   align-items: center;
@@ -895,6 +879,9 @@ button {
 
 
 .orb__label {
+  /* Above the orb's positioned layers, which would otherwise paint over it. */
+  position: relative;
+  z-index: 1;
   margin-top: -20px;
   text-align: center;
   font-size: 17px;

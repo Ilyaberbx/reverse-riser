@@ -24,10 +24,17 @@
   --shadow-blue: rgba(255, 255, 255, 0.12);
   --shadow-deep: rgba(0, 0, 0, 0.75);
 
-  /* Matte black controls with a hairline edge. */
-  --glass-bg: linear-gradient(180deg, #1c1d20, #141517);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 2px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  /* Depth: one key light from above. Raised parts get a lit top edge, a dark bottom lip and a
+     cast shadow; recessed parts get a heavy top inner shadow and a faint lit lip below. */
+  --bevel-hi: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --bevel-lo: inset 0 -1px 0 rgba(0, 0, 0, 0.65);
+  --cast-sm: 0 3px 6px rgba(0, 0, 0, 0.55), 0 1px 1px rgba(0, 0, 0, 0.85);
+  --recess: inset 0 3px 7px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* Matte black keycaps. */
+  --glass-bg: linear-gradient(180deg, #27282b 0%, #1b1c1f 55%, #161719 100%);
+  --glass-border: rgba(0, 0, 0, 0.6);
+  --glass-shadow: var(--cast-sm), var(--bevel-hi), var(--bevel-lo);
   --hairline: rgba(255, 255, 255, 0.07);
 
   --logo-a: #ffffff;
@@ -55,12 +62,14 @@
 :root[data-theme="dark"] .panel {
   background:
     radial-gradient(ellipse 45% 38% at 50% 62%, rgba(255, 255, 255, 0.07), transparent 70%),
-    linear-gradient(180deg, #1b1c1e 0%, #151618 45%, #111213 100%);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+    linear-gradient(180deg, #1e1f22 0%, #161719 40%, #101112 100%);
+  border: 1px solid rgba(0, 0, 0, 0.7);
   box-shadow:
-    0 28px 60px rgba(0, 0, 0, 0.75),
-    0 0 0 1px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 40px 80px -20px rgba(0, 0, 0, 0.85),
+    0 12px 24px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.5);
 }
 
 /* Header ------------------------------------------------------------------------------- */
@@ -70,12 +79,9 @@
   border-bottom: 1px solid var(--hairline);
 }
 
-:root[data-theme="dark"] .wordmark__light {
-  color: #8b8f96;
-}
-
-:root[data-theme="dark"] .wordmark__bold {
-  color: #f2f3f5;
+/* The mark sits on the chassis like a printed badge. */
+:root[data-theme="dark"] .header__brand svg {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.65));
 }
 
 :root[data-theme="dark"] .icon-button {
@@ -89,7 +95,13 @@
 }
 
 :root[data-theme="dark"] .icon-button.is-active {
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.22), var(--recess);
+}
+
+:root[data-theme="dark"] .icon-button:active,
+:root[data-theme="dark"] .preset__nav:active,
+:root[data-theme="dark"] .playback-button:active:not(:disabled) {
+  box-shadow: var(--recess);
 }
 
 :root[data-theme="dark"] .header__ghost .icon-button,
@@ -122,7 +134,8 @@
 }
 
 :root[data-theme="dark"] .preset__nav:active {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 :root[data-theme="dark"] .preset__modified {
@@ -191,18 +204,21 @@
 
 :root[data-theme="dark"] .waveform {
   background:
-    radial-gradient(ellipse 45% 70% at 78% 45%, rgba(255, 255, 255, 0.08), transparent 70%),
-    linear-gradient(180deg, #0c0d0e 0%, #101113 100%);
+    radial-gradient(ellipse 45% 70% at 78% 45%, rgba(255, 255, 255, 0.07), transparent 70%),
+    linear-gradient(180deg, #060607 0%, #0b0c0d 40%, #0f1012 100%);
 }
 
 :root[data-theme="dark"] .waveform:not(.is-recording):not(.is-locked):not(.is-drop-target) {
-  border-color: rgba(255, 255, 255, 0.07);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 -20px 40px rgba(0, 0, 0, 0.35), 0 6px 18px rgba(0, 0, 0, 0.4);
+  border-color: rgba(0, 0, 0, 0.75);
+  box-shadow: inset 0 10px 22px rgba(0, 0, 0, 0.8), inset 0 2px 3px rgba(0, 0, 0, 0.9), inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 :root[data-theme="dark"] .waveform__transport,
 :root[data-theme="dark"] .segmented {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(0, 0, 0, 0.6);
+  background: var(--glass-bg);
+  box-shadow: var(--glass-shadow);
 }
 
 :root[data-theme="dark"] .playback-button + .playback-button {
@@ -222,24 +238,28 @@
 }
 
 :root[data-theme="dark"] .knob__rim {
-  background: radial-gradient(circle at 50% 30%, #2a2b2e 0%, #161719 60%, #0b0b0c 100%);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.07);
+  background: linear-gradient(180deg, #080809 0%, #121315 70%, #19191c 100%);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.85), inset 0 -1px 0 rgba(255, 255, 255, 0.07), 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 :root[data-theme="dark"] .knob:hover .knob__rim,
 :root[data-theme="dark"] .knob.is-dragging .knob__rim {
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.12), 0 0 16px rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.85), inset 0 -1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 16px rgba(255, 255, 255, 0.2);
 }
 
 :root[data-theme="dark"] .knob:focus-visible .knob__rim {
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 6px 14px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), inset 0 3px 6px rgba(0, 0, 0, 0.85);
 }
 
 :root[data-theme="dark"] .knob__cap {
   background:
-    radial-gradient(circle at 38% 28%, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 50%),
-    conic-gradient(from 0deg, #34363a, #1e1f22 12%, #2e3034 25%, #1b1c1f 38%, #323438 50%, #1d1e21 62%, #2c2e32 75%, #1b1c1f 88%, #34363a);
-  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+    radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%),
+    conic-gradient(from 0deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 12%, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0) 38%,
+      rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 62%, rgba(255, 255, 255, 0.04) 75%, rgba(255, 255, 255, 0) 88%, rgba(255, 255, 255, 0.05)),
+    linear-gradient(180deg, #313337 0%, #1d1e21 55%, #141517 100%);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.7), 0 2px 3px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.18),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.6);
 }
 
 :root[data-theme="dark"] .knob__pointer {
@@ -298,9 +318,9 @@
 /* Effect bar and flyout -------------------------------------------------------------------- */
 
 :root[data-theme="dark"] .mode-selector {
-  border-color: rgba(255, 255, 255, 0.07);
-  background: linear-gradient(180deg, #121315 0%, #0d0e0f 100%);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border-color: rgba(0, 0, 0, 0.6);
+  background: linear-gradient(180deg, #09090a 0%, #0f1012 100%);
+  box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.75), inset 0 1px 2px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 :root[data-theme="dark"] .mode-flyout {
@@ -316,12 +336,13 @@
 }
 
 :root[data-theme="dark"] .hslider__track {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 :root[data-theme="dark"] .hslider__thumb {
-  background: radial-gradient(circle at 40% 35%, #ffffff, #b8bcc3);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+  background: radial-gradient(circle at 50% 28%, #ffffff, #c5c8ce 60%, #8d9097);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.7), inset 0 -1px 1px rgba(0, 0, 0, 0.3);
 }
 
 /* The well behind the vortex canvas matches its black body. */
@@ -418,7 +439,7 @@
 :root[data-theme="dark"] .playback-button.is-active {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 -2px 0 #ffffff;
+  box-shadow: var(--recess), inset 0 -2px 0 #ffffff;
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
 }
 
@@ -427,21 +448,21 @@
 }
 
 :root[data-theme="dark"] .segmented__option.is-active {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45), 0 0 12px rgba(255, 255, 255, 0.14);
+  box-shadow: var(--recess), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
 }
 
 :root[data-theme="dark"] .waveform.is-recording {
   border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -20px 40px rgba(0, 0, 0, 0.35), 0 0 22px rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 10px 22px rgba(0, 0, 0, 0.8), inset 0 2px 3px rgba(0, 0, 0, 0.9), 0 0 22px rgba(255, 255, 255, 0.14);
 }
 
 :root[data-theme="dark"] .waveform.is-locked {
   border-color: rgba(255, 255, 255, 0.35);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 18px rgba(255, 255, 255, 0.06),
-    inset 0 -20px 40px rgba(0, 0, 0, 0.35), 0 0 16px rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 10px 22px rgba(0, 0, 0, 0.8), inset 0 2px 3px rgba(0, 0, 0, 0.9), inset 0 0 18px rgba(255, 255, 255, 0.06),
+    0 0 16px rgba(255, 255, 255, 0.1);
 }
 
 :root[data-theme="dark"] .waveform.is-drop-target {
