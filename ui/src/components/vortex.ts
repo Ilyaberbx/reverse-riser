@@ -49,23 +49,7 @@ export interface VortexPalette {
   highlight: string;
 }
 
-/** Blue water and icy filaments (light theme). */
-export const ICE_VORTEX: VortexPalette = {
-  body: [[0, "#01050d"], [0.18, "#031230"], [0.5, "#08306a"], [0.82, "#0d4f9e"], [1, "#0a2c5c"]],
-  glow: [
-    [0, "rgba(120, 200, 255, 0)"],
-    [0.22, "rgba(110, 200, 255, 0.55)"],
-    [0.55, "rgba(167, 240, 255, 0.95)"],
-    [0.85, "rgba(80, 170, 255, 0.85)"],
-    [1, "rgba(40, 120, 255, 0.2)"],
-  ],
-  hole: ["rgba(0, 4, 12, 0.97)", "rgba(1, 10, 28, 0.62)", "rgba(1, 10, 28, 0)"],
-  eyeRim: "167, 240, 255",
-  rimShadow: "2, 10, 26",
-  highlight: "220, 245, 255",
-};
-
-/** White filaments on a black well (dark theme). */
+/** White filaments on a black well. */
 export const WHITE_VORTEX: VortexPalette = {
   body: [[0, "#020202"], [0.18, "#060607"], [0.5, "#111214"], [0.82, "#1c1d20"], [1, "#101113"]],
   glow: [
@@ -87,7 +71,7 @@ const gradient = (g: CanvasGradient, stops: Stops) => {
 };
 
 export function drawVortex(
-  ctx: CanvasRenderingContext2D, size: number, rotation: number, amount: number, palette: VortexPalette = ICE_VORTEX,
+  ctx: CanvasRenderingContext2D, size: number, rotation: number, amount: number, palette: VortexPalette = WHITE_VORTEX,
 ) {
   const R = size / 2;
   ctx.save();

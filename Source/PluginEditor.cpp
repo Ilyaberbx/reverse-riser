@@ -111,8 +111,6 @@ juce::WebBrowserComponent::Options GlacierRiserEditor::createBrowserOptions()
         .withKeepPageLoadedWhenBrowserIsHidden()
         .withNativeIntegrationEnabled()
         .withResourceProvider ([] (const juce::String& url) { return serveResource (url); })
-        .withInitialisationData ("theme", UiSettings::getTheme())
-
         .withNativeFunction ("ready", [this] (const Args&, Completion done)
         {
             pageReady = true;
@@ -200,11 +198,6 @@ juce::WebBrowserComponent::Options GlacierRiserEditor::createBrowserOptions()
             auto dir = processor.getExportsDirectory();
             dir.createDirectory();
             dir.startAsProcess();
-            done (true);
-        })
-        .withNativeFunction ("setTheme", [] (const Args& args, Completion done)
-        {
-            UiSettings::setTheme (argString (args, 0));
             done (true);
         })
         .withNativeFunction ("startDragOut", [this] (const Args&, Completion done)
@@ -309,13 +302,6 @@ void GlacierRiserEditor::timerCallback()
     {
         lastWaveformVersion = v;
         emit ("glacier:waveforms", processor.getWaveformSnapshot());
-    }
-
-    // The theme is shared by every instance: follow a change made in another editor.
-    if (const int v = UiSettings::themeVersion.load(); v != lastThemeVersion)
-    {
-        lastThemeVersion = v;
-        emit ("glacier:theme", UiSettings::getTheme());
     }
 
     if (const int v = processor.getNoticeVersion(); v != lastNoticeVersion)

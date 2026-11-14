@@ -1,8 +1,8 @@
 /*
     Dark theme: near-black matte surfaces with soft graphite edges and white as the only
-    accent: the orb, waveform, switches and buttons glow white instead of ice blue. Same layout and controls as the light theme; it only
+    accent: the orb, waveform, switches and buttons glow white instead of ice blue. It
     redefines the colour tokens and recolours the surfaces. The ice shards are hidden.
-    Rules are scoped to :root[data-theme="dark"], so the light theme is never affected.
+    Scoped to :root[data-theme="dark"] (set in index.html) for specificity over components.css.
 */
 :root[data-theme="dark"] {
   --bg-deep: #0a0a0b;

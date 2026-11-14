@@ -43,25 +43,7 @@ export interface WaveTint {
   headGlow: string;
 }
 
-/** Icy blue (light theme). */
-export const ICE_WAVE: WaveTint = {
-  baseline: "167, 240, 255",
-  glow: "90, 200, 255",
-  bar: (n, original) => `${Math.round(lerp(40, original ? 245 : 225, n))}, ${Math.round(lerp(120, 245, n))}, 255`,
-  liveBar: (n) => `${Math.round(lerp(60, 225, n))}, ${Math.round(lerp(150, 245, n))}, 255`,
-  rawOn: "205, 235, 255",
-  rawOff: "120, 165, 210",
-  selection: "57, 169, 255",
-  handle: "167, 240, 255",
-  handleGlow: "120, 220, 255",
-  notch: "9, 33, 59",
-  line: "57, 169, 255",
-  particle: "190, 235, 255",
-  head: "235, 250, 255",
-  headGlow: "150, 230, 255",
-};
-
-/** White on black (dark theme). */
+/** White on black. */
 export const WHITE_WAVE: WaveTint = {
   baseline: "255, 255, 255",
   glow: "255, 255, 255",
@@ -102,7 +84,7 @@ export function fractionForX(x: number) {
   return Math.min(1, Math.max(0, (x - PAD_X) / INNER_W));
 }
 
-export function drawBarLayer(ctx: CanvasRenderingContext2D, input: BarLayerInput, tint: WaveTint = ICE_WAVE) {
+export function drawBarLayer(ctx: CanvasRenderingContext2D, input: BarLayerInput, tint: WaveTint = WHITE_WAVE) {
   ctx.clearRect(0, 0, WAVE_W, WAVE_H);
   const { view, peaks } = input;
 
@@ -206,7 +188,7 @@ const PARTICLES: Particle[] = (() => {
   }));
 })();
 
-export function drawAtmosphere(ctx: CanvasRenderingContext2D, t: number, emphasis: number[], tint: WaveTint = ICE_WAVE) {
+export function drawAtmosphere(ctx: CanvasRenderingContext2D, t: number, emphasis: number[], tint: WaveTint = WHITE_WAVE) {
   ctx.clearRect(0, 0, WAVE_W, WAVE_H);
 
   // Liquid lines: low-opacity sines whose amplitude follows the waveform's energy.
@@ -246,7 +228,7 @@ export function drawAtmosphere(ctx: CanvasRenderingContext2D, t: number, emphasi
   }
 }
 
-export function drawPlayhead(ctx: CanvasRenderingContext2D, fraction: number, active: boolean, tint: WaveTint = ICE_WAVE) {
+export function drawPlayhead(ctx: CanvasRenderingContext2D, fraction: number, active: boolean, tint: WaveTint = WHITE_WAVE) {
   const x = xForFraction(fraction);
   ctx.fillStyle = active ? "rgba(255, 255, 255, 0.95)" : `rgba(${tint.head}, 0.75)`;
   ctx.shadowColor = `rgba(${tint.headGlow}, 0.95)`;
@@ -265,7 +247,7 @@ export const LIVE_BARS = Math.ceil(INNER_W / LIVE_SPACING) + 2;
     Silence still shows a gentle travelling ripple so recording is visibly alive.
 */
 export function drawLiveWave(
-  ctx: CanvasRenderingContext2D, levels: number[], shift: number, t: number, tint: WaveTint = ICE_WAVE,
+  ctx: CanvasRenderingContext2D, levels: number[], shift: number, t: number, tint: WaveTint = WHITE_WAVE,
 ) {
   const right = PAD_X + INNER_W;
   const maxHalf = MAX_HALF;   // the band is already clear of the buttons

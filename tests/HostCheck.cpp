@@ -154,8 +154,12 @@ int main (int argc, char** argv)
         check (allShortPad, "the silence in front of the clip is shorter than a bar");
     }
 
-    const auto captureDir = juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
-                                .getChildFile ("AtmosRiser").getChildFile ("Captures");
+    // Mirrors userDataDirectory() in PluginProcessor.cpp.
+    auto dataRoot = juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory);
+   #if JUCE_MAC
+    dataRoot = dataRoot.getChildFile ("Application Support");
+   #endif
+    const auto captureDir = dataRoot.getChildFile ("Ice Cold Sound").getChildFile ("Glacier Riser").getChildFile ("Captures");
     const int takeFilesBefore = captureDir.getNumberOfChildFiles (juce::File::findFiles, "take_*.wav");
 
     //-- Load the plugin ----------------------------------------------------------------------

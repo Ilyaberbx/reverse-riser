@@ -1,8 +1,9 @@
-name: Windows build
+name: Release build
 
-# Release packaging for Windows: builds the gated plugin (no license bypass) and
-# uploads GlacierRiser-Windows-VST3.zip / -Standalone.zip as the run's Artifacts.
-# Tests run in build_and_test.yml, so this workflow does not configure the skip flag.
+# Release packaging: builds the gated plugin (no license bypass) for Windows and macOS and
+# uploads the store's download zips (GlacierRiser-<OS>-<format>.zip) as the run's Artifacts.
+# Kept as windows.yml: a workflow with this filename exists on main, so it can be dispatched
+# on any branch.
 on:
   workflow_dispatch:
   push:
@@ -36,11 +37,55 @@ jobs:
       - name: Package zips
         run: |
           mkdir -p dist
-          ( cd "$ARTIFACTS/VST3" && 7z a -tzip "$GITHUB_WORKSPACE/dist/GlacierRiser-Windows-VST3.zip" "Glacier Riser.vst3" )
-          ( cd "$ARTIFACTS/Standalone" && 7z a -tzip "$GITHUB_WORKSPACE/dist/GlacierRiser-Windows-Standalone.zip" "Glacier Riser.exe" )
+          for f in VST3:"Glacier Riser.vst3" Standalone:"Glacier Riser.exe"; do
+            fmt=${f%%:*}; zip="$GITHUB_WORKSPACE/dist/GlacierRiser-Windows-$fmt.zip"
+            ( cd "$ARTIFACTS/$fmt" && 7z a -tzip "$zip" "${f#*:}" )
+            mkdir -p "pkg-$fmt" && cp "packaging/install/Windows-$fmt.txt" "pkg-$fmt/INSTALLATION.txt"
+            ( cd "pkg-$fmt" && 7z a -tzip "$zip" INSTALLATION.txt )
+          done
 
       - name: Upload plugins
         uses: actions/upload-artifact@v4
         with:
           name: GlacierRiser-Windows
+          path: dist/*.zip
+
+  macos:
+    runs-on: macos-latest
+    env:
+      ARTIFACTS: Builds/GlacierRiser_artefacts/Release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Ninja
+        run: brew install ninja
+
+      # Universal (arm64 + x86_64) is the default in CMakeLists.txt.
+      - name: Configure
+        run: cmake -B Builds -G Ninja -DCMAKE_BUILD_TYPE=Release .
+
+      - name: Build
+        run: cmake --build Builds --target GlacierRiser_VST3 GlacierRiser_AU GlacierRiser_Standalone
+
+      # Ad-hoc until there is a Developer ID; ditto without resource forks or xattrs keeps the
+      # bundle seal intact (no ._ files in the zip).
+      - name: Sign and package zips
+        run: |
+          mkdir -p dist
+          for f in VST3:"Glacier Riser.vst3" AU:"Glacier Riser.component" Standalone:"Glacier Riser.app"; do
+            fmt=${f%%:*}; bundle="$ARTIFACTS/$fmt/${f#*:}"; zip="$GITHUB_WORKSPACE/dist/GlacierRiser-macOS-$fmt.zip"
+            codesign --force --deep --sign - "$bundle"
+            codesign --verify --deep --strict "$bundle"
+            stage="stage-$fmt"; mkdir -p "$stage"
+            ditto "$bundle" "$stage/${f#*:}"
+            cp "packaging/install/macOS-$fmt.txt" "$stage/INSTALLATION.txt"
+            ( cd "$stage" && zip -qry -X "$zip" . )
+          done
+
+      - name: Upload plugins
+        uses: actions/upload-artifact@v4
+        with:
+          name: GlacierRiser-macOS
           path: dist/*.zip

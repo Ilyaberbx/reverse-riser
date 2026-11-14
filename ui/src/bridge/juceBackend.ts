@@ -9,7 +9,7 @@ interface JuceBackendObject {
 
 interface JuceGlobal {
   backend: JuceBackendObject;
-  initialisationData?: { __juce__functions?: string[]; theme?: string[] };
+  initialisationData?: { __juce__functions?: string[] };
 }
 
 declare global {
@@ -80,7 +80,6 @@ export function createJuceBackend(): Backend {
     openFile: () => void call("openFile"),
     exportWav: () => void call("exportWav"),
     openExportsFolder: () => void call("openExportsFolder"),
-    setTheme: (theme) => void call("setTheme", theme),
     startDragOut: async () => asResult(await call("startDragOut")),
 
     activate: (key) => void call("activate", key),

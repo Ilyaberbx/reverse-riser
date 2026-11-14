@@ -87,9 +87,6 @@ export interface Toast {
   error: boolean;
 }
 
-/** UI look. A per-user preference, not a parameter: never part of presets, undo or the project. */
-export type Theme = "light" | "dark";
-
 export interface Result {
   ok: boolean;
   message: string;
@@ -117,8 +114,6 @@ export interface BackendEvents {
   "glacier:waveforms": Waveforms;
   "glacier:playback": Playback;
   "glacier:toast": Toast;
-  /** The UI theme changed in another open instance. */
-  "glacier:theme": Theme;
   "glacier:license": License;
 }
 
@@ -148,9 +143,6 @@ export interface Backend {
   openExportsFolder(): void;
   startDragOut(): Promise<Result>;
   loadAudioFile(file: File): Promise<Result>;
-
-  /** Saves the UI theme for every instance of the plugin. */
-  setTheme(theme: Theme): void;
 
   activate(key: string): void;
   deactivate(): void;

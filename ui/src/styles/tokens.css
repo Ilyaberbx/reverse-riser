@@ -1,4 +1,4 @@
-/* Theme-independent tokens. Colours live in themes/light.css and themes/dark.css. */
+/* Non-colour tokens. Colours live in themes/base.css and themes/dark.css. */
 :root {
   --radius-panel: 24px;
   --radius-card: 18px;
@@ -9,11 +9,4 @@
   --t-med: 220ms;
 
   --font: "Inter", "Segoe UI", system-ui, sans-serif;
-}
-
-/* Switching theme crossfades the whole page (View Transitions), see theme.ts. */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 260ms;
-  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
 }

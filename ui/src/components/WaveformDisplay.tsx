@@ -15,10 +15,8 @@ import {
   WAVE_H,
   WAVE_W,
   xForFraction,
-  ICE_WAVE,
   WHITE_WAVE,
 } from "./waveformRenderer";
-import { useTheme } from "../theme";
 
 type View = "raw" | "edit";
 
@@ -34,7 +32,7 @@ export function WaveformDisplay({ dropActive }: { dropActive: boolean }) {
   const state = useStore((s) => s.state);
   const playback = useStore((s) => s.playback);
   const reducedMotion = usePrefersReducedMotion();
-  const tint = useTheme() === "dark" ? WHITE_WAVE : ICE_WAVE;
+  const tint = WHITE_WAVE;
 
   const atmosphereRef = useRef<HTMLCanvasElement>(null);
   const barsRef = useRef<HTMLCanvasElement>(null);

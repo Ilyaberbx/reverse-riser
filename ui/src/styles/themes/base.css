@@ -1,6 +1,5 @@
-/* Light "Frost" theme: the original look. components.css and layout.css are written for it. */
-:root,
-:root[data-theme="light"] {
+/* Base tokens that components.css and layout.css are written against; dark.css overrides them. */
+:root {
   --bg-deep: #071526;
   --bg-navy: #0b2542;
   --bg-waveform: #0a2441;

@@ -1,8 +1,5 @@
 # Glacier Riser (VST3)
 
-Formerly AtmosRiser. Existing projects that used AtmosRiser open with Glacier Riser: the plugin
-ID is unchanged.
-
 A reverse-reverb and riser plugin. Put it on a vocal or instrument track, press play: it
 listens to the track, picks the first phrase, and renders a reverse-reverb swell that rises
 into it. On the next playback the swell plays in sync with your timeline. You can also drag the
@@ -39,7 +36,7 @@ Insert Glacier Riser first on the vocal track. It captures whatever reaches its 
 after other effects it records them, and the dropped clip would then be processed by them twice.
 
 Adjust the phrase in **RAW** view (drag to select, drag the handles). Takes are saved in
-`%APPDATA%\AtmosRiser\Captures` (one file per instance; older takes from the same session are
+`%APPDATA%\Ice Cold Sound\Glacier Riser\Captures` (one file per instance; older takes from the same session are
 deleted), so reopening the project restores the last one.
 
 Automatic sibilance detection is always on. It finds "s"/"sh" sounds in the selection and turns
@@ -111,16 +108,16 @@ rescanning plugins in your DAW.
 | **Level** (fourth, next to Fade) | Output level of the swell, -24 to +6 dB. |
 | **LOCK** | Keeps the current take when the DAW plays. |
 | **Reverse orb** | Musical length of the swell: 1/8 bar to 8 bars, following the host tempo and time signature (120 BPM in the standalone app). |
-| **Sun / moon** (header) | Switches between the light and dark theme. It is a look only: saved once for every instance in `%APPDATA%\AtmosRiser\ui-settings.xml`, and never part of presets, undo, automation or the DAW project. |
-| Presets | Seven factory presets. **Save** stores your own in `%APPDATA%\AtmosRiser\Presets`. |
+| Presets | Seven factory presets. **Save** stores your own in `%APPDATA%\Ice Cold Sound\Glacier Riser\Presets`. |
 | Menu | Load audio, Export WAV, open the exports folder, and **Include original after the swell** (off by default: the clip is the swell alone and ends where the phrase begins). |
 
 Knobs and the orb respond to vertical drag (Shift for fine), the mouse wheel, arrow keys and
 Page Up/Down. Double-click resets a control.
 
 Exports and drag-outs are written to `Documents\Glacier Riser Exports`. Dropped files are copied
-to `%APPDATA%\AtmosRiser\Imported Audio` so the DAW project can reload them later. The
-`%APPDATA%\AtmosRiser` folder keeps the former name on purpose: saved projects point into it.
+to `%APPDATA%\Ice Cold Sound\Glacier Riser\Imported Audio` so the DAW project can reload them later. On macOS the same
+folders live in `~/Library/Application Support/Ice Cold Sound/Glacier Riser`. Never move them:
+saved projects point into them.
 
 ## Testing against a simulated DAW
 
@@ -160,14 +157,12 @@ Source/                     C++ plugin
   ReverseReverbRenderer.*   offline DSP: segment -> reverse -> diffuse -> reverb -> reverse -> colour
   PluginProcessor.*         parameters, presets, tempo sync, playback, state, UI snapshots
   PluginEditor.*            WebView2 host and the JS <-> C++ bridge
-  UiSettings.h              per-user UI preferences (theme), shared by all instances
 ui/                         web interface (React + TypeScript + Vite)
   src/bridge/               backend contract, JUCE implementation, browser mock
   src/components/           PluginHeader, WaveformDisplay, ReverseOrb, RotaryKnob,
                             ParameterPanel, EffectModeSelector, IconButton, icons
   src/styles/               tokens.css, layout.css, components.css
-  src/styles/themes/        light.css (the original look), dark.css (dark-only overrides)
-  src/theme.ts              theme state and the switch, kept out of the parameter store
+  src/styles/themes/        base.css (base tokens), dark.css (the look, overrides base)
 third_party/webview2/       WebView2 SDK headers and static loader
 ```
 

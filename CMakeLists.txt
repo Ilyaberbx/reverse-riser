@@ -6,7 +6,7 @@ if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "macOS build architectures")
 endif()
 
-project(GlacierRiser VERSION 2.1.0)
+project(GlacierRiser VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -86,9 +86,14 @@ add_dependencies(GlacierRiserUIData GlacierRiserUIBundle)
 
 # ------------------------------------------------------------------------------
 juce_add_plugin(GlacierRiser
-    COMPANY_NAME "Mykhailo Nosenko"
-    PLUGIN_MANUFACTURER_CODE Mnos
-    PLUGIN_CODE Rvrb
+    COMPANY_NAME "Ice Cold Sound"
+    COMPANY_WEBSITE "https://icecoldsound.com"
+    COMPANY_EMAIL "hello@icecoldsound.com"
+    COMPANY_COPYRIGHT "© 2026 Ice Cold Sound"
+    BUNDLE_ID com.icecoldsound.glacierriser
+    # Fixed for the product's life: hosts identify the plugin (and saved sessions) by these.
+    PLUGIN_MANUFACTURER_CODE Icsd
+    PLUGIN_CODE Glrs
     FORMATS VST3 AU Standalone
     PRODUCT_NAME "Glacier Riser"
     ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.svg"

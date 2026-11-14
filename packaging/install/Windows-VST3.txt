@@ -1,0 +1,47 @@
+                  *************
+             ***********************
+           ****************************
+        *********************************
+       ***********              ***********
+     *********                     *********
+    *********        *******          *******
+    *******       **************       *******
+   *******      ******************      *******
+   *******     ******         *****      ******
+  *******      *****            ****      ******
+   ******      ****              ****     ******
+   ******      *****             ****     ******
+   *******      *****      **    ****     ******
+    *******      **********      ****     *****
+     *******         ****       ****     ******
+      ********                *****      *****
+        **********         ******       *****
+          *********************       ******
+             ***************         *****
+                                  ******
+                               *******
+                           ********
+                   **********
+
+GLACIER RISER: Windows VST3
+Ice Cold Sound
+
+INSTALLING
+1. Right-click this zip and choose "Extract All". You get a folder
+   called "Glacier Riser.vst3".
+2. Copy that whole folder to:
+     C:\Program Files\Common Files\VST3
+   Windows asks for admin permission. Click Continue.
+3. Open your DAW and rescan plugins, then look for
+   Glacier Riser in your plugin list.
+
+ACTIVATING
+1. Open Glacier Riser and paste your license key when it asks.
+2. Your key is on your account page at
+   https://icecoldsound.com/en/account and in your purchase email.
+   One key works on 2 computers at the same time. To move it to a new
+   machine, remove the old one from your account page first.
+
+HELP
+Something not working? Email hello@icecoldsound.com and tell us your
+OS, your DAW and what you see.

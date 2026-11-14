@@ -1,0 +1,46 @@
+                  *************
+             ***********************
+           ****************************
+        *********************************
+       ***********              ***********
+     *********                     *********
+    *********        *******          *******
+    *******       **************       *******
+   *******      ******************      *******
+   *******     ******         *****      ******
+  *******      *****            ****      ******
+   ******      ****              ****     ******
+   ******      *****             ****     ******
+   *******      *****      **    ****     ******
+    *******      **********      ****     *****
+     *******         ****       ****     ******
+      ********                *****      *****
+        **********         ******       *****
+          *********************       ******
+             ***************         *****
+                                  ******
+                               *******
+                           ********
+                   **********
+
+GLACIER RISER: Windows Standalone
+Ice Cold Sound
+
+INSTALLING
+1. Right-click this zip and choose "Extract All".
+2. Move "Glacier Riser.exe" wherever you keep your apps, for example
+   C:\Program Files\Ice Cold Sound.
+3. Double-click it to run. If Windows SmartScreen says it protected
+   your PC, click "More info", then "Run anyway". You don't need a DAW;
+   pick your audio input and output in the app's settings.
+
+ACTIVATING
+1. Open Glacier Riser and paste your license key when it asks.
+2. Your key is on your account page at
+   https://icecoldsound.com/en/account and in your purchase email.
+   One key works on 2 computers at the same time. To move it to a new
+   machine, remove the old one from your account page first.
+
+HELP
+Something not working? Email hello@icecoldsound.com and tell us your
+OS, your DAW and what you see.

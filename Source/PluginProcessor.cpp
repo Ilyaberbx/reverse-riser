@@ -900,24 +900,30 @@ void GlacierRiserProcessor::parameterChanged (const juce::String&, float)
 }
 
 //==============================================================================
-// User data stays in %APPDATA%\AtmosRiser (the plugin's former name): saved DAW projects point to
-// captured takes and imported audio there by full path, so moving it would break them.
+// %APPDATA%\Ice Cold Sound\Glacier Riser, or ~/Library/Application Support/... on macOS. Saved DAW
+// projects point at captured takes and imported audio here by full path: never move it again.
+static juce::File userDataDirectory()
+{
+    auto root = juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory);
+   #if JUCE_MAC
+    root = root.getChildFile ("Application Support");
+   #endif
+    return root.getChildFile ("Ice Cold Sound").getChildFile ("Glacier Riser");
+}
+
 juce::File GlacierRiserProcessor::getUserPresetDirectory() const
 {
-    return juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
-               .getChildFile ("AtmosRiser").getChildFile ("Presets");
+    return userDataDirectory().getChildFile ("Presets");
 }
 
 juce::File GlacierRiserProcessor::getImportDirectory() const
 {
-    return juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
-               .getChildFile ("AtmosRiser").getChildFile ("Imported Audio");
+    return userDataDirectory().getChildFile ("Imported Audio");
 }
 
 juce::File GlacierRiserProcessor::getCaptureDirectory() const
 {
-    return juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
-               .getChildFile ("AtmosRiser").getChildFile ("Captures");
+    return userDataDirectory().getChildFile ("Captures");
 }
 
 juce::File GlacierRiserProcessor::getExportsDirectory() const

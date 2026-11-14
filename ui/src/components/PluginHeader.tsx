@@ -10,13 +10,10 @@ import {
   DownloadIcon,
   FolderIcon,
   MenuIcon,
-  MoonIcon,
   OpenFileIcon,
   SavePresetIcon,
-  SunIcon,
 } from "./icons";
 import { IconButton } from "./IconButton";
-import { toggleTheme, useTheme } from "../theme";
 
 /** Closes a popover when clicking outside it or pressing Escape. */
 function useDismiss(open: boolean, close: () => void) {
@@ -212,19 +209,6 @@ function PluginMenu() {
   );
 }
 
-/** Sun/moon switch between the light and dark looks. A UI preference only: no parameter changes. */
-function ThemeToggle() {
-  const dark = useTheme() === "dark";
-  const label = dark ? "Light theme" : "Dark theme";
-  return (
-    <div className="header__ghost">
-      <IconButton label={label} onClick={toggleTheme}>
-        {dark ? <SunIcon size={21} strokeWidth={2} /> : <MoonIcon size={20} strokeWidth={2} />}
-      </IconButton>
-    </div>
-  );
-}
-
 export function PluginHeader() {
   const [saving, setSaving] = useState(false);
 
@@ -246,7 +230,6 @@ export function PluginHeader() {
       </div>
 
       <div className="header__right">
-        <ThemeToggle />
         <PluginMenu />
       </div>
 

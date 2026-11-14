@@ -7,10 +7,10 @@ namespace
     // The store's catalog slug. Never change it: every issued license names it.
     constexpr auto productId = "glacier-riser";
 
-    // Public half of apps/api LICENSE_SIGNING_KEY (RSA-2048, e = 65537). This is the DEV key:
-    // replace it with the production modulus before release (see README, "Licensing").
+    // Public half of the PRODUCTION apps/api LICENSE_SIGNING_KEY (RSA-2048, e = 65537).
+    // Changing it invalidates every activated machine (see README, "Licensing").
     constexpr auto publicModulusHex =
-        "d55cabb3b069bf8461cd8d330869fdbfaf901f21aa2a9f28db76288599e60bda4fc59c081591c967db728bef2d82dd40d9579e8610dfc398fdbe08c9654615943e6e70f5f07d96d44baec0b45792966b140fe05c4f474879b94376097da8a88e0c3cc30251a0d680bb674b3ee4dea7b5fdca0d8a5913f73f6670fa884d09340d8b636a0e166a42c8f983ef7c7f07175c9d3cfc6c7a40db8e9e11f2d4e6528241d33386b875c455ebf746484c8b23e1679e4e4ad05b80e915682e451fb86a2a8e8bfa498e88a6c30442856b217095310c34b69f67d14c55d2034ea23fadbe75a0e50bba7ad4b31f910427262827a31e7b6c7ad65f034f35275abae0af0320f763";
+        "b3f01a2abec0981c918af92e6451de6a141f9e63b5f2b6b44ca91a3e787e6a3cd483f7078c7f795d6ddc6f398b77be2966a9ea8a830481b9df4971385747fe94f8ba7727ab9de3bbd8ab5832fe90d314c1d3fcf09a4dbf791d8a344a1cafa88fb052e5d8d22cde0f7b631c822e56fb91c72e49d7a1565ef01b675e83ad318215c51d1654c6c598252b40ca8d3d88c223a1d9d24a61ea7d65b7856b4d41252fa150483300d74a40b12d41950af4cc6ec803ce157a667858911e54a8d418ad13bb7c2f1904306a36ecc7c5d58708f990a7af5b44d02d57b36d33cdeaf892a5dd85f1e0a823c352d7fa2439b1d149e7b053dd90ab482b6cce9c4faf612d011f99ff";
 
     // The store's public origin. The web app proxies /api/* to apps/api.
     constexpr auto serverUrl = "https://icecoldsound.com";
